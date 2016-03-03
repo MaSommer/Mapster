@@ -13,6 +13,10 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    private int cock;
+    private String hestkuk = null;
+
+    private int femten = 15;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
