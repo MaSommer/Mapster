@@ -14,6 +14,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GoogleMap mMap;
     private int cock;
+<<<<<<< HEAD
+=======
+    private int git_suger_fitte;
+>>>>>>> master
     private String hestkuk = null;
 
     private int femten = 15;
