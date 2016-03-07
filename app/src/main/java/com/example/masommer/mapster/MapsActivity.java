@@ -2,8 +2,11 @@ package com.example.masommer.mapster;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
@@ -17,17 +20,31 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
+
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener {
 
 
     private GoogleMap mMap;
     private final int MY_PERMISSION_LOCATION_ACCESS = 1;
+
+    private ArrayList<Building> buildingList = new ArrayList<Building>();
 
 
 
@@ -39,6 +56,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        //createBuildingList();
+        //placeMarkers();
+
     }
 
     /**
@@ -60,22 +80,24 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     MY_PERMISSION_LOCATION_ACCESS);
         }
         mMap = googleMap;
-
-        // Add a marker at ucsb and move the camera
-        LatLng ucsb = new LatLng(34.412573495197854, -119.8470050096512);
-        mMap.addMarker(new MarkerOptions().position(ucsb).title("Marker at UCSB"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(ucsb));
         mMap.setOnMapClickListener(this);
         //Add north hall to map
-        LatLng northHallPos = new LatLng(34.415151360789565, -119.84659027319226);
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.raw.north_hall_v3);
+        Log.i("bitmap", ""+bitmap);
+        BitmapDescriptor bs = BitmapDescriptorFactory.fromBitmap(bitmap);
+        Log.i("bs", ""+bs);
+
+        LatLng northHallPos = new LatLng(34.415135360789565, -119.84668038419226);
         GroundOverlayOptions newarkMap = new GroundOverlayOptions()
-                .image(BitmapDescriptorFactory.fromResource(R.raw.north_hall))
-                .position(northHallPos, 120f, 90f);
+                .image(bs)
+                .position(northHallPos, 131f, 99f);
         mMap.addGroundOverlay(newarkMap);
         //Zoom in to UCSB campus
         CameraPosition cp = new CameraPosition.Builder()
                 .target(northHallPos)
-                .zoom(15)
+                .zoom(20)
                 .build();
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cp));
         //Set my location
@@ -109,6 +131,65 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onLocationChanged(Location var1){
 
+    }
+
+    public void createBuildingList(){
+        File sdcard = Environment.getExternalStorageDirectory();
+
+        File file = new File(sdcard,"file.txt");
+
+        StringBuilder text = new StringBuilder();
+        InputStream is;
+
+        try {
+            InputStream inputStream = getResources().openRawResource(R.raw.room_and_buildings);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            String line;
+            boolean createNewBuilding = true;
+            Building building = new Building("luring");
+            while ((line = reader.readLine()) != null) {
+                String[] output;
+                output = line.split(" ");
+                if (createNewBuilding){
+                    building = new Building(output[0]);
+                    createNewBuilding = false;
+                }
+                if (line.isEmpty()){
+                    createNewBuilding = true;
+                    buildingList.add(building);
+                }
+                else{
+                    double latitude = Double.parseDouble(output[2]);
+                    double longtitude = Double.parseDouble(output[3]);
+                    LatLng latLng = new LatLng(latitude, longtitude);
+                    Room room = new Room(output[0], output[1], latLng);
+                    building.addRoom(room);
+                }
+
+
+            }
+            reader.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            //You'll need to add proper error handling here
+        }
+
+    }
+
+    public void placeMarkers(){
+        for (Building building : buildingList) {
+            Iterator it = building.getBuilding().entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry pair = (Map.Entry) it.next();
+                Log.i("key", ""+pair.getKey());
+                Log.i("value", ""+pair.getValue());
+                LatLng sydney = (LatLng) pair.getValue();
+                mMap.addMarker(new MarkerOptions().position(sydney).title("Marker at" + pair.getKey()));
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+                it.remove(); // avoids a ConcurrentModificationException
+            }
+        }
     }
 
 }
