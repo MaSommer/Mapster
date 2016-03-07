@@ -34,6 +34,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener {
 
@@ -54,6 +57,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         //createBuildingList();
+        //placeMarkers();
 
     }
 
@@ -85,15 +89,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         BitmapDescriptor bs = BitmapDescriptorFactory.fromBitmap(bitmap);
         Log.i("bs", ""+bs);
 
-        LatLng northHallPos = new LatLng(34.415151360789565, -119.84679038419226);
+        LatLng northHallPos = new LatLng(34.415135360789565, -119.84668038419226);
         GroundOverlayOptions newarkMap = new GroundOverlayOptions()
                 .image(bs)
-                .position(northHallPos, 130f, 95f);
+                .position(northHallPos, 131f, 99f);
         mMap.addGroundOverlay(newarkMap);
         //Zoom in to UCSB campus
         CameraPosition cp = new CameraPosition.Builder()
                 .target(northHallPos)
-                .zoom(15)
+                .zoom(20)
                 .build();
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cp));
         //Set my location
@@ -171,6 +175,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             //You'll need to add proper error handling here
         }
 
+    }
+
+    public void placeMarkers(){
+        for (Building building : buildingList) {
+            Iterator it = building.getBuilding().entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry pair = (Map.Entry) it.next();
+                Log.i("key", ""+pair.getKey());
+                Log.i("value", ""+pair.getValue());
+                LatLng sydney = (LatLng) pair.getValue();
+                mMap.addMarker(new MarkerOptions().position(sydney).title("Marker at" + pair.getKey()));
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+                it.remove(); // avoids a ConcurrentModificationException
+            }
+        }
     }
 
 }
