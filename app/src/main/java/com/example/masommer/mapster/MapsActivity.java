@@ -80,15 +80,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //Add north hall to map
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.raw.north_hall_v2);
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.raw.north_hall_v3);
         Log.i("bitmap", ""+bitmap);
         BitmapDescriptor bs = BitmapDescriptorFactory.fromBitmap(bitmap);
         Log.i("bs", ""+bs);
 
-        LatLng northHallPos = new LatLng(34.415151360789565, -119.84669038419226);
+        LatLng northHallPos = new LatLng(34.415151360789565, -119.84679038419226);
         GroundOverlayOptions newarkMap = new GroundOverlayOptions()
                 .image(bs)
-                .position(northHallPos, 120f, 90f);
+                .position(northHallPos, 130f, 95f);
         mMap.addGroundOverlay(newarkMap);
         //Zoom in to UCSB campus
         CameraPosition cp = new CameraPosition.Builder()
