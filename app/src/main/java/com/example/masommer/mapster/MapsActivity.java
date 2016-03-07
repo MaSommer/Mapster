@@ -142,7 +142,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
             String line;
             boolean createNewBuilding = true;
-            Building building;
+            Building building = new Building("luring");
             while ((line = reader.readLine()) != null) {
                 String[] output;
                 output = line.split(" ");
@@ -152,13 +152,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
                 if (line.isEmpty()){
                     createNewBuilding = true;
+                    buildingList.add(building);
                 }
                 else{
                     double latitude = Double.parseDouble(output[2]);
                     double longtitude = Double.parseDouble(output[3]);
                     LatLng latLng = new LatLng(latitude, longtitude);
                     Room room = new Room(output[0], output[1], latLng);
-                    //building.addRoom(room);
+                    building.addRoom(room);
                 }
 
 
