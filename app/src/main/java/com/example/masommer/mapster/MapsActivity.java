@@ -34,6 +34,7 @@ import java.util.ArrayList;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener {
 
+
     private GoogleMap mMap;
     private final int MY_PERMISSION_LOCATION_ACCESS = 1;
 
@@ -102,8 +103,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapClick(LatLng var1) {
-        Log.i("lat", ""+var1.latitude);
-        Log.i("long", ""+var1.longitude);
+        Log.i("lat", "" + var1.latitude);
+        Log.i("long", "" + var1.longitude);
 
     }
 
