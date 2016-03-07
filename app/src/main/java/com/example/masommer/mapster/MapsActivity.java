@@ -2,6 +2,7 @@ package com.example.masommer.mapster;
 
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -14,7 +15,7 @@ import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener {
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener {
 
     private GoogleMap mMap;
 
@@ -73,8 +74,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onMapClick(LatLng var1) {
-        Log.i("lat", ""+var1.latitude);
-        Log.i("long", ""+var1.longitude);
+        Log.i("lat", "" + var1.latitude);
+        Log.i("long", "" + var1.longitude);
 
     }
 }
