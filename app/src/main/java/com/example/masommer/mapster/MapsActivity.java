@@ -90,6 +90,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.i("bs", ""+bs);
 
         LatLng northHallPos = new LatLng(34.415135360789565, -119.84668038419226);
+
         GroundOverlayOptions newarkMap = new GroundOverlayOptions()
                 .image(bs)
                 .position(northHallPos, 131f, 99f);
@@ -97,7 +98,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //Zoom in to UCSB campus
         CameraPosition cp = new CameraPosition.Builder()
                 .target(northHallPos)
-                .zoom(20)
+                .zoom(16)
                 .build();
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cp));
         //Set my location
@@ -164,6 +165,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     LatLng latLng = new LatLng(latitude, longtitude);
                     Room room = new Room(output[0], output[1], latLng);
                     building.addRoom(room);
+                    Log.i("yes", "hei");
                 }
 
 
@@ -179,14 +181,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void placeMarkers(){
         for (Building building : buildingList) {
+            Log.i("building", ""+building);
             Iterator it = building.getBuilding().entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry pair = (Map.Entry) it.next();
                 Log.i("key", ""+pair.getKey());
                 Log.i("value", ""+pair.getValue());
-                LatLng sydney = (LatLng) pair.getValue();
-                mMap.addMarker(new MarkerOptions().position(sydney).title("Marker at" + pair.getKey()));
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+                LatLng pos = (LatLng) pair.getValue();
+                Log.i("pos", ""+pos);
+                mMap.addMarker(new MarkerOptions().position(pos).title("Marker at" + pair.getKey()));
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(pos));
                 it.remove(); // avoids a ConcurrentModificationException
             }
         }
