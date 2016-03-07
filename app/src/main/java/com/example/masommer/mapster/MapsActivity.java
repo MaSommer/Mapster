@@ -85,7 +85,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         BitmapDescriptor bs = BitmapDescriptorFactory.fromBitmap(bitmap);
         Log.i("bs", ""+bs);
 
-        LatLng northHallPos = new LatLng(34.415151360789565, -119.84679038419226);
+        LatLng northHallPos = new LatLng(34.415130260789565, -119.84671038419226);
         GroundOverlayOptions newarkMap = new GroundOverlayOptions()
                 .image(bs)
                 .position(northHallPos, 130f, 95f);
