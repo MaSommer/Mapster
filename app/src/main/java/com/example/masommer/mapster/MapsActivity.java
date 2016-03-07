@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
@@ -23,10 +24,20 @@ import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener {
 
     private GoogleMap mMap;
     private final int MY_PERMISSION_LOCATION_ACCESS = 1;
+
+    private ArrayList<Building> buildingList = new ArrayList<Building>();
 
 
 
@@ -38,6 +49,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        createBuildingList();
+
     }
 
     /**
@@ -59,14 +72,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     MY_PERMISSION_LOCATION_ACCESS);
         }
         mMap = googleMap;
-
-        // Add a marker at ucsb and move the camera
-        LatLng ucsb = new LatLng(34.412573495197854, -119.8470050096512);
-        mMap.addMarker(new MarkerOptions().position(ucsb).title("Marker at UCSB"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(ucsb));
         mMap.setOnMapClickListener(this);
         //Add north hall to map
-        LatLng northHallPos = new LatLng(34.415151360789565, -119.84659027319226);
+        LatLng northHallPos = new LatLng(34.415151360789565, -119.84669038419226);
         GroundOverlayOptions newarkMap = new GroundOverlayOptions()
                 .image(BitmapDescriptorFactory.fromResource(R.raw.north_hall))
                 .position(northHallPos, 120f, 90f);
@@ -107,6 +115,49 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onLocationChanged(Location var1){
+
+    }
+
+    public void createBuildingList(){
+        File sdcard = Environment.getExternalStorageDirectory();
+
+        File file = new File(sdcard,"file.txt");
+
+        StringBuilder text = new StringBuilder();
+        InputStream is;
+
+        try {
+            InputStream inputStream = getResources().openRawResource(R.raw.room_and_buildings);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            String line;
+            boolean createNewBuilding = true;
+            Building building;
+            while ((line = reader.readLine()) != null) {
+                String[] output;
+                output = line.split(" ");
+                if (createNewBuilding){
+                    building = new Building(output[0]);
+                    createNewBuilding = false;
+                }
+                if (line.isEmpty()){
+                    createNewBuilding = true;
+                }
+                else{
+                    double latitude = Double.parseDouble(output[2]);
+                    double longtitude = Double.parseDouble(output[3]);
+                    LatLng latLng = new LatLng(latitude, longtitude);
+                    Room room = new Room(output[0], output[1], latLng);
+
+                }
+
+
+            }
+            reader.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            //You'll need to add proper error handling here
+        }
 
     }
 

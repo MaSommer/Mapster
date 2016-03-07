@@ -18,6 +18,11 @@ public class Room {
         this.latLng = latLng;
     }
 
+
+    public String getRoomNumber(){
+        return roomNumber;
+    }
+
     public LatLng getLatLng(){
         return latLng;
     }
