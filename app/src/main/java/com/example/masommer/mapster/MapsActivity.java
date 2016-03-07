@@ -50,7 +50,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        createBuildingList();
+        //createBuildingList();
 
     }
 
@@ -148,7 +148,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     double longtitude = Double.parseDouble(output[3]);
                     LatLng latLng = new LatLng(latitude, longtitude);
                     Room room = new Room(output[0], output[1], latLng);
-
+                    //building.addRoom(room);
                 }
 
 
