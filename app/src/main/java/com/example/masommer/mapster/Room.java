@@ -12,10 +12,15 @@ public class Room {
     private LatLng latLng;
 
 
-    public Room(String building, String roomNumber, LatLng pos){
+    public Room(String building, String roomNumber, LatLng latLng){
         this.roomNumber = roomNumber;
         this.building = building;
         this.latLng = latLng;
+    }
+
+
+    public String getRoomNumber(){
+        return roomNumber;
     }
 
     public LatLng getLatLng(){

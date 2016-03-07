@@ -9,15 +9,20 @@ import java.util.HashMap;
  */
 public class Building {
 
-    private HashMap<String, LatLng> building = new HashMap<String, LatLng>();
+    private HashMap<String, LatLng> rooms = new HashMap<String, LatLng>();
+    private String name;
 
 
-    public Building(HashMap<String, LatLng> building){
-        this.building = building;
+    public Building(String name){
+        this.name = name;
     }
 
     public HashMap<String, LatLng> getBuilding(){
-        return building;
+        return rooms;
+    }
+
+    public void addRoom(Room room){
+        rooms.put(room.getRoomNumber(), room.getLatLng());
     }
 
 }
