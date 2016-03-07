@@ -2,6 +2,8 @@ package com.example.masommer.mapster;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Environment;
@@ -18,6 +20,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
@@ -75,9 +78,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap = googleMap;
         mMap.setOnMapClickListener(this);
         //Add north hall to map
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.raw.north_hall_v2);
+        Log.i("bitmap", ""+bitmap);
+        BitmapDescriptor bs = BitmapDescriptorFactory.fromBitmap(bitmap);
+        Log.i("bs", ""+bs);
+
         LatLng northHallPos = new LatLng(34.415151360789565, -119.84669038419226);
         GroundOverlayOptions newarkMap = new GroundOverlayOptions()
-                .image(BitmapDescriptorFactory.fromResource(R.raw.north_hall))
+                .image(bs)
                 .position(northHallPos, 120f, 90f);
         mMap.addGroundOverlay(newarkMap);
         //Zoom in to UCSB campus
