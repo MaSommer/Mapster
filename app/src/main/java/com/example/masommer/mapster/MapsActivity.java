@@ -2,23 +2,22 @@ package com.example.masommer.mapster;
 
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener {
 
     private GoogleMap mMap;
-    private int cock;
 
-    private int git_suger_fitte;
-    private String hestkuk = null;
-
-    private int femten = 15;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +27,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+
     }
 
 
@@ -45,8 +46,35 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        LatLng ucsb = new LatLng(34.412573495197854, -119.8470050096512);
+        mMap.addMarker(new MarkerOptions().position(ucsb).title("Marker at UCSB"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(ucsb));
+        mMap.setOnMapClickListener(this);
+        //Add north hall to map
+        LatLng northHallPos = new LatLng(34.415151360789565, -119.84659027319226);
+        GroundOverlayOptions newarkMap = new GroundOverlayOptions()
+                .image(BitmapDescriptorFactory.fromResource(R.raw.north_hall))
+                .position(northHallPos, 120f, 90f);
+        mMap.addGroundOverlay(newarkMap);
+        //Zoom in to UCSB campus
+        CameraPosition cp = new CameraPosition.Builder()
+                .target(northHallPos)
+                .zoom(15)
+                .build();
+        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cp));
+
+
+
+    }
+
+    @Override
+    public void onMapLoaded() {
+    }
+
+    @Override
+    public void onMapClick(LatLng var1) {
+        Log.i("lat", ""+var1.latitude);
+        Log.i("long", ""+var1.longitude);
+
     }
 }
