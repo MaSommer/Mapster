@@ -12,6 +12,16 @@ import android.location.LocationManager;
 
 import android.app.SearchManager;
 
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.app.SearchManager;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
@@ -243,7 +253,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-<<<<<<< HEAD
     public void findDirections(double fromPositionDoubleLat, double fromPositionDoubleLong, double toPositionDoubleLat, double toPositionDoubleLong, String mode)
     {
         Map<String, String> map = new HashMap<String, String>();
@@ -257,17 +266,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         asyncTask.execute(map);
     }
 
-    public void handleGetDirectionsResult(ArrayList directionPoints)
-    {
+    public void handleGetDirectionsResult(ArrayList directionPoints) {
         Polyline newPolyline;
-        GoogleMap mMap = ((SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
+        GoogleMap mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
         PolylineOptions rectLine = new PolylineOptions().width(8).color(Color.RED);
-        for(int i = 0 ; i < directionPoints.size() ; i++)
-        {
+        for (int i = 0; i < directionPoints.size(); i++) {
             rectLine.add((LatLng) directionPoints.get(i));
         }
         newPolyline = mMap.addPolyline(rectLine);
-=======
+    }
+
     public void onZoomToMarkersClick(MenuItem item) {
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         if(roomMarker!=null && ContextCompat.checkSelfPermission(this,
@@ -284,6 +292,5 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         int padding = 0; // offset from edges of the map in pixels
         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
         mMap.animateCamera(cu);
->>>>>>> origin/master
     }
 }
