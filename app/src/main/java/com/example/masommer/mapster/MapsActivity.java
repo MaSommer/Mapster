@@ -149,6 +149,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .position(kerrHallPos, 93.8f, 69f);
         mMap.addGroundOverlay(newark);
 
+        Bitmap sh = BitmapFactory.decodeResource(getResources(), R.raw.south_hall);
+        Log.i("bitmap", "" + sh);
+        BitmapDescriptor sh_bs = BitmapDescriptorFactory.fromBitmap(sh);
+        Log.i("bs", "" + sh_bs);
+        LatLng southHallPos = new LatLng(34.41369886374294, -119.84712543206453);
+        GroundOverlayOptions sh_newark = new GroundOverlayOptions()
+                .image(sh_bs)
+                .position(southHallPos,133f, 143f);
+        mMap.addGroundOverlay(sh_newark);
+
         //Zoom in to UCSB campus
         CameraPosition cp = new CameraPosition.Builder()
                 .target(northHallPos)
