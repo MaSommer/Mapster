@@ -1,5 +1,6 @@
 package com.example.masommer.mapster;
 
+import android.app.ListActivity;
 import android.app.SearchManager;
 import android.content.ContentValues;
 import android.content.Context;
@@ -9,6 +10,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -20,12 +23,10 @@ import java.io.InputStreamReader;
 /**
  * Created by agmal_000 on 07.03.2016.
  */
-public class DatabaseTable {
+public class DatabaseTable extends ListActivity{
 
     private static final String TAG = "RoomDatabase";
 
-    //The columns we'll include in the dictionary table
-    public static final String COL_BUILDING = "BUILDING";
     public static final String COL_ROOM = "ROOM";
     public static final String COL_LAT = "LATITUDE";
     public static final String COL_LONG = "LONGITUDE";
@@ -36,9 +37,14 @@ public class DatabaseTable {
 
     private final DatabaseOpenHelper mDatabaseOpenHelper;
 
+    public DatabaseTable() {
+        mDatabaseOpenHelper = new DatabaseOpenHelper(this);
+    }
+
     public DatabaseTable(Context context) {
         mDatabaseOpenHelper = new DatabaseOpenHelper(context);
     }
+
 
     private static class DatabaseOpenHelper extends SQLiteOpenHelper {
 
@@ -48,7 +54,6 @@ public class DatabaseTable {
         private static final String FTS_TABLE_CREATE =
                 "CREATE VIRTUAL TABLE " + FTS_VIRTUAL_TABLE +
                         " USING fts3 (" +
-                        COL_BUILDING + ", " +
                         COL_ROOM + ", " +
                         COL_LAT + ", " +
                         COL_LONG + ")";
@@ -94,10 +99,10 @@ public class DatabaseTable {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     String[] strings = TextUtils.split(line, " ");
-                    if (strings.length < 4) continue;
-                    long id = addLocation(strings[0].trim(), strings[1].trim(), strings[2].trim(), strings[3].trim());
+                    if (strings.length < 3) continue;
+                    long id = addLocation(strings[0].trim(), strings[1].trim(), strings[2].trim());
                     if (id < 0) {
-                        Log.e(TAG, "unable to add location: " + strings[0].trim() + " " + strings[1].trim());
+                        Log.e(TAG, "unable to add location: " + strings[0].trim());
                     }
                 }
             } finally {
@@ -105,9 +110,8 @@ public class DatabaseTable {
             }
         }
 
-        public long addLocation(String building, String room, String lat, String lon) {
+        public long addLocation(String room, String lat, String lon) {
             ContentValues initialValues = new ContentValues();
-            initialValues.put(COL_BUILDING, building);
             initialValues.put(COL_ROOM, room);
             initialValues.put(COL_LAT, lat);
             initialValues.put(COL_LONG, lon);
@@ -121,7 +125,7 @@ public class DatabaseTable {
 
         //TODO: fix getWordMatches to take both building and room number
 
-        String selection = COL_BUILDING + " MATCH ?";
+        String selection = COL_ROOM + " MATCH ?";
         String[] selectionArgs = new String[] {query+"*"};
 
         return query(selection, selectionArgs, columns);

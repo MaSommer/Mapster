@@ -2,7 +2,6 @@ package com.example.masommer.mapster;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -10,6 +9,9 @@ import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
+
+import android.app.SearchManager;
+
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.app.SearchManager;
@@ -29,7 +31,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.SearchView;
 
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.maps.CameraUpdate;
@@ -147,6 +148,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .image(kerr_bs)
                 .position(kerrHallPos, 93.8f, 69f);
         mMap.addGroundOverlay(newark);
+
+        Bitmap sh = BitmapFactory.decodeResource(getResources(), R.raw.south_hall);
+        Log.i("bitmap", "" + sh);
+        BitmapDescriptor sh_bs = BitmapDescriptorFactory.fromBitmap(sh);
+        Log.i("bs", "" + sh_bs);
+        LatLng southHallPos = new LatLng(34.41369886374294, -119.84712543206453);
+        GroundOverlayOptions sh_newark = new GroundOverlayOptions()
+                .image(sh_bs)
+                .position(southHallPos,133f, 143f);
+        mMap.addGroundOverlay(sh_newark);
 
         //Zoom in to UCSB campus
         CameraPosition cp = new CameraPosition.Builder()
