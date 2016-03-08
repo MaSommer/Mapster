@@ -87,6 +87,8 @@ public class DatabaseTable extends ListActivity{
             }).start();
         }
 
+
+
         private void loadLocations() throws IOException {
             final Resources resources = mHelperContext.getResources();
             InputStream inputStream = resources.openRawResource(R.raw.room_and_buildings);
@@ -96,7 +98,7 @@ public class DatabaseTable extends ListActivity{
                 String line;
                 while ((line = reader.readLine()) != null) {
                     String[] strings = TextUtils.split(line, " ");
-                    if (strings.length < 3) continue;
+                    //if (strings.length < 3) continue;
                     long id = addLocation(strings[0].trim(), strings[1].trim(), strings[2].trim());
                     if (id < 0) {
                         Log.e(TAG, "unable to add location: " + strings[0].trim());
@@ -122,6 +124,13 @@ public class DatabaseTable extends ListActivity{
 
         String selection = COL_ROOM + " MATCH ?";
         String[] selectionArgs = new String[] {query+"*"};
+
+        return query(selection, selectionArgs, columns);
+    }
+
+    public Cursor getRoom(String rowId, String[] columns) {
+        String selection = "rowid = ?";
+        String[] selectionArgs = new String[]{rowId};
 
         return query(selection, selectionArgs, columns);
     }
