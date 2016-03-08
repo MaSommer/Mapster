@@ -33,6 +33,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -121,6 +122,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     MY_PERMISSION_LOCATION_ACCESS);
         }
+
+
         mMap = googleMap;
         mMap.setOnMapClickListener(this);
         //Add north hall to map
@@ -165,6 +168,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .zoom(16)
                 .build();
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cp));
+
+        //for testing
+        roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.41447398728048, -119.8470713943243)));
+
         //Set my location
         try {
             mMap.setMyLocationEnabled(true);
@@ -300,6 +307,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 == PackageManager.PERMISSION_GRANTED) {
 
             Location myLocation = lm.getLastKnownLocation(provider);
+            Location myLocation = mMap.getMyLocation();
             builder.include(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()));
         } else {
             return;
@@ -307,6 +315,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         builder.include(roomMarker.getPosition());
         LatLngBounds bounds = builder.build();
         int padding = 0; // offset from edges of the map in pixels
+        int padding = 50; // offset from edges of the map in pixels
         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
         mMap.animateCamera(cu);
     }
