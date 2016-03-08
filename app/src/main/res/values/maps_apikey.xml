@@ -17,5 +17,6 @@ Once you have your key (it starts with "AIza"), replace the "google_maps_key"
 string in this file.
 -->
 <resources>
-    <string name="maps_apikey">AIzaSyDnbY9p0vfltfTC_7uo_CxmxTEnnBlifSw</string>
+    <string name="maps_apikey">AIzaSyBYNKQTDBM6cS9s-6YG29qqA7Wm39mGanU</string>
+
 </resources>
