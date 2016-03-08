@@ -172,7 +172,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         } catch (SecurityException e) {
             e.printStackTrace();
         }
-        marker = mMap.addMarker(new MarkerOptions().position(new LatLng(34, -119)));
+        //marker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.415370973562936, -119.84701473265886)));
         //createBuildingList();
     }
 
@@ -182,11 +182,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapClick(LatLng var1) {
-        marker.remove();
+        //marker.remove();
         Context context = getApplicationContext();
         Log.i("lat", "" + var1.latitude);
         Log.i("long", "" + var1.longitude);
-        marker = mMap.addMarker(new MarkerOptions().position(var1));
+        //marker = mMap.addMarker(new MarkerOptions().position(var1));
 
 
 
@@ -309,6 +309,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         int padding = 0; // offset from edges of the map in pixels
         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
         mMap.animateCamera(cu);
+    }
+
+    public void onDirectionClick(MenuItem item){
+        if (roomMarker != null && (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED)){
+            Location location = mMap.getMyLocation();
+            LatLng currentPos = new LatLng(location.getLatitude(), location.getLongitude());
+            LatLng targetPos = new LatLng(roomMarker.getPosition().latitude, roomMarker.getPosition().longitude);
+            findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");
+        }
+        else{
+            return;
+        }
+
     }
 }
 
