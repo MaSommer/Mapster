@@ -1,10 +1,17 @@
 package com.example.masommer.mapster;
 
 import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationManager;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
@@ -26,6 +33,10 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -33,9 +44,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener {
@@ -45,6 +60,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private final int MY_PERMISSION_LOCATION_ACCESS = 1;
 
     private ArrayList<Building> buildingList = new ArrayList<Building>();
+
+    private ArrayList<LatLng> markerPoints = new ArrayList<LatLng>();
+
 
 
 
@@ -56,8 +74,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        //createBuildingList();
-        //placeMarkers();
 
     }
 
@@ -109,7 +125,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         catch (SecurityException e){
             e.printStackTrace();
         }
-
+        createBuildingList();
     }
 
     @Override
@@ -155,7 +171,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     building = new Building(output[0]);
                     createNewBuilding = false;
                 }
-                if (line.isEmpty()){
+                Log.i("Line", "" + output);
+                if (line.equals("STOP")){
                     createNewBuilding = true;
                     buildingList.add(building);
                 }
@@ -165,7 +182,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     LatLng latLng = new LatLng(latitude, longtitude);
                     Room room = new Room(output[0], output[1], latLng);
                     building.addRoom(room);
-                    Log.i("yes", "hei");
                 }
 
 
@@ -189,11 +205,35 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.i("value", ""+pair.getValue());
                 LatLng pos = (LatLng) pair.getValue();
                 Log.i("pos", ""+pos);
-                mMap.addMarker(new MarkerOptions().position(pos).title("Marker at" + pair.getKey()));
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(pos));
+                Log.i("map", "" + mMap);
+                mMap.addMarker(new MarkerOptions().position(pos));
                 it.remove(); // avoids a ConcurrentModificationException
             }
         }
     }
 
+    public void findDirections(double fromPositionDoubleLat, double fromPositionDoubleLong, double toPositionDoubleLat, double toPositionDoubleLong, String mode)
+    {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put(GetDirectionsAsyncTask.USER_CURRENT_LAT, String.valueOf(fromPositionDoubleLat));
+        map.put(GetDirectionsAsyncTask.USER_CURRENT_LONG, String.valueOf(fromPositionDoubleLong));
+        map.put(GetDirectionsAsyncTask.DESTINATION_LAT, String.valueOf(toPositionDoubleLat));
+        map.put(GetDirectionsAsyncTask.DESTINATION_LONG, String.valueOf(toPositionDoubleLong));
+        map.put(GetDirectionsAsyncTask.DIRECTIONS_MODE, mode);
+
+        GetDirectionsAsyncTask asyncTask = new GetDirectionsAsyncTask(this);
+        asyncTask.execute(map);
+    }
+
+    public void handleGetDirectionsResult(ArrayList directionPoints)
+    {
+        Polyline newPolyline;
+        GoogleMap mMap = ((SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
+        PolylineOptions rectLine = new PolylineOptions().width(8).color(Color.RED);
+        for(int i = 0 ; i < directionPoints.size() ; i++)
+        {
+            rectLine.add((LatLng) directionPoints.get(i));
+        }
+        newPolyline = mMap.addPolyline(rectLine);
+    }
 }
