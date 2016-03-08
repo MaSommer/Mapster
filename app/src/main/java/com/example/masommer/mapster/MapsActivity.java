@@ -38,7 +38,12 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+<<<<<<< HEAD
 import android.widget.AdapterView;
+=======
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+>>>>>>> refs/remotes/origin/master
 import android.widget.Toast;
 
 import com.google.android.gms.location.LocationListener;
@@ -88,10 +93,25 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LocationManager lm;
     private String provider;
     private Marker marker;
+    private boolean landscape;
 
+    private ListView listView;
     private ArrayList<Building> buildingList = new ArrayList<Building>();
-
     private ArrayList<LatLng> markerPoints = new ArrayList<LatLng>();
+    private ArrayList<String> listItems=new ArrayList<String>();
+    private ArrayAdapter<String> adapter;
+
+    private double currentCameraLongtitude;
+    private double currentCameraLatitude;
+    private double currentPositionLongtitude;
+    private double currentPositionLatitude;
+    private double roomMarkerLongtitude;
+    private double roomMarkerLatitude;
+
+    private double[] longtitudeList;
+    private double[] latitudeList;
+
+    private CameraPosition cameraPos;
 
     private DatabaseTable db;
 
@@ -111,6 +131,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        if (findViewById(R.id.sampleListView) != null) {
+            landscape = true;
+            listView = (ListView) findViewById(R.id.sampleListView);
+            listView.setVisibility(View.GONE);
+
+            adapter=new ArrayAdapter<String>(this,
+                    android.R.layout.simple_list_item_1,
+                    listItems);
+            listView.setAdapter(adapter);
+        }
+
 
 
     }
@@ -263,6 +295,28 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         } catch (SecurityException e) {
             e.printStackTrace();
         }
+        if (currentCameraLongtitude != 0.0){
+            LatLng cameraPosition = new LatLng(currentCameraLatitude, currentCameraLongtitude);
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(cameraPosition));
+        }
+        //roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.415370973562936, -119.84701473265886)));
+        if (latitudeList != null){
+            Location location = mMap.getMyLocation();
+            LatLng currentPos = new LatLng(currentPositionLatitude, currentPositionLongtitude);
+            LatLng targetPos = new LatLng(roomMarker.getPosition().latitude, roomMarker.getPosition().longitude);
+            findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");            /*ArrayList<LatLng> directionPoints = new ArrayList<LatLng>();
+            for (int i = 0; i < directionPoints.size(); i++) {
+                LatLng point = new LatLng(latitudeList[i], longtitudeList[i]);
+                directionPoints.add(point);
+            }
+            Polyline newPolyline;
+            GoogleMap mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
+            PolylineOptions rectLine = new PolylineOptions().width(8).color(Color.RED);
+            for (int i = 0; i < directionPoints.size(); i++) {
+                rectLine.add((LatLng) directionPoints.get(i));
+            }
+            newPolyline = mMap.addPolyline(rectLine);*/
+        }
         //marker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.415370973562936, -119.84701473265886)));
         //createBuildingList();
     }
@@ -378,13 +432,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Polyline newPolyline;
         GoogleMap mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
         PolylineOptions rectLine = new PolylineOptions().width(8).color(Color.RED);
+        longtitudeList = new double[directionPoints.size()];
+        latitudeList = new double[directionPoints.size()];
         for (int i = 0; i < directionPoints.size(); i++) {
             rectLine.add((LatLng) directionPoints.get(i));
+            LatLng point = (LatLng) directionPoints.get(i);
+            longtitudeList[i] = point.longitude;
+            latitudeList[i] = point.latitude;
         }
         newPolyline = mMap.addPolyline(rectLine);
     }
 
     public void onZoomToMarkersClick(MenuItem item) {
+        if (landscape){
+            listView.setVisibility(View.VISIBLE);
+            listItems.add("NH1111 : ");
+            adapter.notifyDataSetChanged();
+        }
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         if (roomMarker != null && ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
@@ -409,6 +473,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Location location = mMap.getMyLocation();
             LatLng currentPos = new LatLng(location.getLatitude(), location.getLongitude());
             LatLng targetPos = new LatLng(roomMarker.getPosition().latitude, roomMarker.getPosition().longitude);
+            currentPositionLongtitude = currentPos.longitude;
+            currentPositionLatitude = currentPos.latitude;
             findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");
         }
         else{
@@ -418,6 +484,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
+<<<<<<< HEAD
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         String[] qry = {args.getString("QUERY")};
         switch (id) {
@@ -444,6 +511,50 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+=======
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putDouble("roomMarkerLongtitude", roomMarkerLongtitude);
+        outState.putDouble("roomMarkerLatitude", roomMarkerLatitude);
+        outState.putDouble("currentCameraLongtitude", currentCameraLongtitude);
+        outState.putDouble("currentCameraLatitude", currentCameraLatitude);
+        outState.putDoubleArray("longtitudeList", longtitudeList);
+        outState.putDoubleArray("latitudeList", latitudeList);
+        outState.putDouble("currentPositionLongtitude", currentPositionLongtitude);
+        outState.putDouble("currentPositionLatitude", currentPositionLatitude);
+
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        roomMarkerLongtitude = savedInstanceState.getDouble("roomMarkerLongtitude");
+        roomMarkerLatitude = savedInstanceState.getDouble("roomMarkerLatitude");
+        currentCameraLatitude = savedInstanceState.getDouble("currentCameraLatitude");
+        currentCameraLongtitude = savedInstanceState.getDouble("currentCameraLongtitude");
+        latitudeList = savedInstanceState.getDoubleArray("latitudeList");
+        longtitudeList = savedInstanceState.getDoubleArray("longtitudeList");
+        currentPositionLongtitude = savedInstanceState.getDouble("currentPositionLongtitude");
+        currentPositionLatitude = savedInstanceState.getDouble("currentPositionLatitude");
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        if (cameraPos != null) {
+            mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPos));
+            cameraPos = null;
+        }
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        if (mMap != null){
+            currentCameraLatitude = mMap.getCameraPosition().target.latitude;
+            currentCameraLongtitude = mMap.getCameraPosition().target.longitude;
+        }
+>>>>>>> refs/remotes/origin/master
 
     }
 }
