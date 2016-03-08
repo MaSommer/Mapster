@@ -2,6 +2,7 @@ package com.example.masommer.mapster;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -27,12 +28,17 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.LocationListener;
@@ -72,11 +78,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener {
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor>, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener {
 
 
     private GoogleMap mMap;
     private final int MY_PERMISSION_LOCATION_ACCESS = 1;
+    private final int DATABASE_LOADER = 0;
     private Marker roomMarker;
     private LocationManager lm;
     private String provider;
@@ -92,7 +99,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        db = new DatabaseTable(this);
+        //db = new DatabaseTable(this);
         lm = (LocationManager) getSystemService(LOCATION_SERVICE);
         // Creating a criteria object to retrieve provider
         Criteria criteria = new Criteria();
@@ -113,25 +120,71 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void handleIntent(Intent intent) {
-       /* if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+
+        if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             // handles a click on a search suggestion; launches activity to show word
-            Intent wordIntent = new Intent(this, WordActivity.class);
-            wordIntent.setData(intent.getData());
-            startActivity(wordIntent);
-        } else */
-        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            Toast.makeText(getApplicationContext(), "VOILA!", Toast.LENGTH_LONG).show();
+        } else if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             // handles a search query
             String query = intent.getStringExtra(SearchManager.QUERY);
-            Cursor cursor = db.getWordMatches(query, null);
+            Bundle args = new Bundle();
+            args.putString("QUERY", query);
+            getSupportLoaderManager().initLoader(DATABASE_LOADER, args, this);
+//            Cursor cursor = db.getWordMatches(query, null);
+//
+//            Intent new_intent = new Intent(this, DisplayResultActivity.class);
+//            ArrayList<String> result = new ArrayList<>();
+//            for(cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+//                // The Cursor is now set to the right position
+//                result.add(cursor.getString(0));
+//            }
+//            new_intent.putExtra("RESULT", result);
+//            MapsActivity.this.startActivity(intent);
+            //String query = intent.getStringExtra(SearchManager.QUERY);
+            //showResults(query);
+        }
+    }
 
-            Intent new_intent = new Intent(this, DisplayResultActivity.class);
-            ArrayList<String> result = new ArrayList<>();
-            for(cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-                // The Cursor is now set to the right position
-                result.add(cursor.getString(0));
-            }
-            new_intent.putExtra("RESULT", result);
-            MapsActivity.this.startActivity(intent);
+    private void showResults(String query) {
+
+        Cursor cursor = new CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
+                new String[]{query}, null);
+        if (cursor == null) {
+            // There are no results
+            //mTextView.setText(getString(R.string.no_results, new Object[]{query}));
+        } else {
+            // Display the number of results
+            int count = cursor.getCount();
+            //String countString = getResources().getQuantityString(R.plurals.search_results,
+            //        count, new Object[] {count, query});
+            //mTextView.setText(countString);
+            Toast.makeText(MapsActivity.this, "WOW: You found "+count+" results!", Toast.LENGTH_SHORT).show();
+            // Specify the columns we want to display in the result
+//            String[] from = new String[] { DictionaryDatabase.KEY_WORD,
+//                    DictionaryDatabase.KEY_DEFINITION };
+//
+//            // Specify the corresponding layout elements where we want the columns to go
+//            int[] to = new int[] { R.id.word,
+//                    R.id.definition };
+//
+//            // Create a simple cursor adapter for the definitions and apply them to the ListView
+//            SimpleCursorAdapter words = new SimpleCursorAdapter(this,
+//                    R.layout.result, cursor, from, to);
+//            mListView.setAdapter(words);
+//
+//            // Define the on-click listener for the list items
+//            mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//
+//                @Override
+//                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                    // Build the Intent used to open WordActivity with a specific word Uri
+//                    Intent wordIntent = new Intent(getApplicationContext(), WordActivity.class);
+//                    Uri data = Uri.withAppendedPath(DictionaryProvider.CONTENT_URI,
+//                            String.valueOf(id));
+//                    wordIntent.setData(data);
+//                    startActivity(wordIntent);
+//                }
+//            });
         }
     }
 
@@ -361,6 +414,36 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         else{
             return;
         }
+
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        String[] qry = {args.getString("QUERY")};
+        switch (id) {
+            case DATABASE_LOADER:
+                // Returns a new CursorLoader
+                return new CursorLoader(
+                        getApplicationContext(),   // Parent activity context
+                        DatabaseProvider.CONTENT_URI,
+                        null,
+                        null,     // Projection to return
+                        qry,            // No selection arguments
+                        null             // Default sort order
+                );
+            default:
+                // An invalid id was passed in
+                return null;
+        }
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
 
     }
 }
