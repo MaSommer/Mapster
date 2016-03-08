@@ -37,10 +37,6 @@ public class DatabaseTable extends ListActivity{
 
     private final DatabaseOpenHelper mDatabaseOpenHelper;
 
-    public DatabaseTable() {
-        mDatabaseOpenHelper = new DatabaseOpenHelper(this);
-    }
-
     public DatabaseTable(Context context) {
         mDatabaseOpenHelper = new DatabaseOpenHelper(context);
     }
