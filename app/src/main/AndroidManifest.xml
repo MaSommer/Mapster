@@ -52,10 +52,7 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".MapsAct"
-            android:label="@string/title_activity_maps">
-        </activity>
+
 
     </application>
 
