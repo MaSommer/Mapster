@@ -306,7 +306,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
 
-            Location myLocation = lm.getLastKnownLocation(provider);
             Location myLocation = mMap.getMyLocation();
             builder.include(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()));
         } else {
@@ -314,7 +313,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         builder.include(roomMarker.getPosition());
         LatLngBounds bounds = builder.build();
-        int padding = 0; // offset from edges of the map in pixels
         int padding = 50; // offset from edges of the map in pixels
         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
         mMap.animateCamera(cu);
