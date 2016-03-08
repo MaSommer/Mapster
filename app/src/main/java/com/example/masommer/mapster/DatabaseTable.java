@@ -24,7 +24,6 @@ public class DatabaseTable {
 
     private static final String TAG = "RoomDatabase";
 
-    //The columns we'll include in the dictionary table
     public static final String COL_BUILDING = "BUILDING";
     public static final String COL_ROOM = "ROOM";
     public static final String COL_LAT = "LATITUDE";
