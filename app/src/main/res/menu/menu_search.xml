@@ -5,7 +5,7 @@
 
     <item
         android:id="@+id/action_search"
-        android:orderInCategory="200"
+        android:orderInCategory="300"
         android:title="Search"
         app:actionViewClass="android.support.v7.widget.SearchView"
         android:icon="@android:drawable/ic_menu_search"
@@ -13,9 +13,17 @@
 
     <item
         android:id="@+id/zoom_to_markers"
-        android:orderInCategory="100"
+        android:orderInCategory="200"
         android:title="zoom"
         android:icon="@android:drawable/ic_menu_view"
         app:showAsAction="ifRoom"
         android:onClick="onZoomToMarkersClick"/>
+
+    <item
+        android:id="@+id/direction"
+        android:orderInCategory="100"
+        android:title="direction"
+        android:icon="@android:drawable/ic_menu_compass"
+        app:showAsAction="ifRoom"
+        android:onClick="onDirectionClick"/>
 </menu>
