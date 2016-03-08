@@ -2,7 +2,6 @@ package com.example.masommer.mapster;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -10,6 +9,9 @@ import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
+
+import android.app.SearchManager;
+
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.app.SearchManager;
@@ -29,7 +31,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.SearchView;
 
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.maps.CameraUpdate;
@@ -52,10 +53,12 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -73,17 +76,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Marker roomMarker;
     private LocationManager lm;
     private String provider;
+    private Marker marker;
 
     private ArrayList<Building> buildingList = new ArrayList<Building>();
 
     private ArrayList<LatLng> markerPoints = new ArrayList<LatLng>();
 
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
 
         lm = (LocationManager) getSystemService(LOCATION_SERVICE);
         // Creating a criteria object to retrieve provider
@@ -96,6 +99,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
 
     }
 
@@ -123,7 +127,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.raw.north_hall_v3);
-        Log.i("bitmap", ""+bitmap);
+        Log.i("bitmap", "" + bitmap);
         BitmapDescriptor bs = BitmapDescriptorFactory.fromBitmap(bitmap);
         Log.i("bs", "" + bs);
 
@@ -136,10 +140,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
         Bitmap kerr = BitmapFactory.decodeResource(getResources(), R.raw.kerr_hall);
-        Log.i("bitmap", ""+kerr);
+        Log.i("bitmap", "" + kerr);
         BitmapDescriptor kerr_bs = BitmapDescriptorFactory.fromBitmap(kerr);
         Log.i("bs", "" + kerr_bs);
-        LatLng kerrHallPos = new LatLng(34.41455997621988,-119.84687080011797);
+        LatLng kerrHallPos = new LatLng(34.41455997621988, -119.84687080011797);
         GroundOverlayOptions newark = new GroundOverlayOptions()
                 .image(kerr_bs)
                 .position(kerrHallPos, 93.8f, 69f);
@@ -152,14 +156,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .build();
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cp));
         //Set my location
-        try{
+        try {
             mMap.setMyLocationEnabled(true);
 
-        }
-        catch (SecurityException e){
+        } catch (SecurityException e) {
             e.printStackTrace();
         }
-        createBuildingList();
+        marker = mMap.addMarker(new MarkerOptions().position(new LatLng(34, -119)));
+        //createBuildingList();
     }
 
     @Override
@@ -168,8 +172,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapClick(LatLng var1) {
+        marker.remove();
+        Context context = getApplicationContext();
         Log.i("lat", "" + var1.latitude);
         Log.i("long", "" + var1.longitude);
+        marker = mMap.addMarker(new MarkerOptions().position(var1));
+
+
+
 
     }
 
@@ -186,14 +196,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onLocationChanged(Location var1){
+    public void onLocationChanged(Location var1) {
 
     }
 
-    public void createBuildingList(){
+    public void createBuildingList() {
         File sdcard = Environment.getExternalStorageDirectory();
 
-        File file = new File(sdcard,"file.txt");
+        File file = new File(sdcard, "file.txt");
 
         StringBuilder text = new StringBuilder();
         InputStream is;
@@ -207,16 +217,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             while ((line = reader.readLine()) != null) {
                 String[] output;
                 output = line.split(" ");
-                if (createNewBuilding){
+                if (createNewBuilding) {
                     building = new Building(output[0]);
                     createNewBuilding = false;
                 }
                 Log.i("Line", "" + output);
-                if (line.equals("STOP")){
+                if (line.equals("STOP")) {
                     createNewBuilding = true;
                     buildingList.add(building);
-                }
-                else{
+                } else {
                     double latitude = Double.parseDouble(output[2]);
                     double longtitude = Double.parseDouble(output[3]);
                     LatLng latLng = new LatLng(latitude, longtitude);
@@ -227,24 +236,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             }
             reader.close();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             //You'll need to add proper error handling here
         }
 
     }
 
-    public void placeMarkers(){
+    public void placeMarkers() {
         for (Building building : buildingList) {
-            Log.i("building", ""+building);
+            Log.i("building", "" + building);
             Iterator it = building.getBuilding().entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry pair = (Map.Entry) it.next();
-                Log.i("key", ""+pair.getKey());
-                Log.i("value", ""+pair.getValue());
+                Log.i("key", "" + pair.getKey());
+                Log.i("value", "" + pair.getValue());
                 LatLng pos = (LatLng) pair.getValue();
-                Log.i("pos", ""+pos);
+                Log.i("pos", "" + pos);
                 Log.i("map", "" + mMap);
                 mMap.addMarker(new MarkerOptions().position(pos));
                 it.remove(); // avoids a ConcurrentModificationException
@@ -252,8 +260,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    public void findDirections(double fromPositionDoubleLat, double fromPositionDoubleLong, double toPositionDoubleLat, double toPositionDoubleLong, String mode)
-    {
+
+    public void findDirections(double fromPositionDoubleLat, double fromPositionDoubleLong, double toPositionDoubleLat, double toPositionDoubleLong, String mode) {
         Map<String, String> map = new HashMap<String, String>();
         map.put(GetDirectionsAsyncTask.USER_CURRENT_LAT, String.valueOf(fromPositionDoubleLat));
         map.put(GetDirectionsAsyncTask.USER_CURRENT_LONG, String.valueOf(fromPositionDoubleLong));
@@ -277,15 +285,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void onZoomToMarkersClick(MenuItem item) {
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
-        if(roomMarker!=null && ContextCompat.checkSelfPermission(this,
+        if (roomMarker != null && ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED){
+                == PackageManager.PERMISSION_GRANTED) {
 
-                Location myLocation = lm.getLastKnownLocation(provider);
-                builder.include(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()));
-            }else{
-                return;
-            }
+            Location myLocation = lm.getLastKnownLocation(provider);
+            builder.include(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()));
+        } else {
+            return;
+        }
         builder.include(roomMarker.getPosition());
         LatLngBounds bounds = builder.build();
         int padding = 0; // offset from edges of the map in pixels
@@ -293,3 +301,4 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.animateCamera(cu);
     }
 }
+

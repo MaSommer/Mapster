@@ -1,4 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!--
+TODO: Before you run your application, you need a Google Maps API key.
+
+To get one, follow this link, follow the directions and press "Create" at the end:
+
+https://console.developers.google.com/flows/enableapi?apiid=maps_android_backend&keyType=CLIENT_SIDE_ANDROID&r=C3:A9:3F:4C:10:BB:E0:03:84:86:BC:CD:DB:1C:E1:A2:3F:4C:DD:E0%3Bcom.example.masommer.mapster
+
+You can also add your credentials to an existing key, using this line:
+C3:A9:3F:4C:10:BB:E0:03:84:86:BC:CD:DB:1C:E1:A2:3F:4C:DD:E0;com.example.masommer.mapster
+
+Alternatively, follow the directions here:
+https://developers.google.com/maps/documentation/android/start#get-key
+
+Once you have your key (it starts with "AIza"), replace the "google_maps_key"
+string in this file.
+-->
 <resources>
-    <string name="maps_apikey">AIzaSyA7uBn6IvngezGfUiATEk3tNI6_UzPA9Mc</string>
+<<<<<<< HEAD
+    <string name="maps_apikey">AIzaSyBYNKQTDBM6cS9s-6YG29qqA7Wm39mGanU</string>
+=======
+    <string name="maps_apikey">AIzaSyAeoK74z-DuGCs9jmYQiHEQ35qdw__Vv-I</string>
+>>>>>>> Martin
 </resources>
