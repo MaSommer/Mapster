@@ -2,6 +2,7 @@ package com.example.masommer.mapster;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -27,12 +28,22 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+<<<<<<< HEAD
+import android.widget.AdapterView;
+=======
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+>>>>>>> refs/remotes/origin/master
 import android.widget.Toast;
 
 import com.google.android.gms.location.LocationListener;
@@ -72,19 +83,35 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener {
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor>, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener {
 
 
     private GoogleMap mMap;
     private final int MY_PERMISSION_LOCATION_ACCESS = 1;
+    private final int DATABASE_LOADER = 0;
     private Marker roomMarker;
     private LocationManager lm;
     private String provider;
     private Marker marker;
+    private boolean landscape;
 
+    private ListView listView;
     private ArrayList<Building> buildingList = new ArrayList<Building>();
-
     private ArrayList<LatLng> markerPoints = new ArrayList<LatLng>();
+    private ArrayList<String> listItems=new ArrayList<String>();
+    private ArrayAdapter<String> adapter;
+
+    private double currentCameraLongtitude;
+    private double currentCameraLatitude;
+    private double currentPositionLongtitude;
+    private double currentPositionLatitude;
+    private double roomMarkerLongtitude;
+    private double roomMarkerLatitude;
+
+    private double[] longtitudeList;
+    private double[] latitudeList;
+
+    private CameraPosition cameraPos;
 
     private DatabaseTable db;
 
@@ -92,7 +119,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        db = new DatabaseTable(this);
+        //db = new DatabaseTable(this);
         lm = (LocationManager) getSystemService(LOCATION_SERVICE);
         // Creating a criteria object to retrieve provider
         Criteria criteria = new Criteria();
@@ -105,6 +132,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        if (findViewById(R.id.sampleListView) != null) {
+            landscape = true;
+            listView = (ListView) findViewById(R.id.sampleListView);
+            listView.setVisibility(View.GONE);
+
+            adapter=new ArrayAdapter<String>(this,
+                    android.R.layout.simple_list_item_1,
+                    listItems);
+            listView.setAdapter(adapter);
+        }
+
+
 
     }
 
@@ -113,25 +152,71 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void handleIntent(Intent intent) {
-       /* if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+
+        if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             // handles a click on a search suggestion; launches activity to show word
-            Intent wordIntent = new Intent(this, WordActivity.class);
-            wordIntent.setData(intent.getData());
-            startActivity(wordIntent);
-        } else */
-        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            Toast.makeText(getApplicationContext(), "VOILA!", Toast.LENGTH_LONG).show();
+        } else if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             // handles a search query
             String query = intent.getStringExtra(SearchManager.QUERY);
-            Cursor cursor = db.getWordMatches(query, null);
+            Bundle args = new Bundle();
+            args.putString("QUERY", query);
+            getSupportLoaderManager().initLoader(DATABASE_LOADER, args, this);
+//            Cursor cursor = db.getWordMatches(query, null);
+//
+//            Intent new_intent = new Intent(this, DisplayResultActivity.class);
+//            ArrayList<String> result = new ArrayList<>();
+//            for(cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+//                // The Cursor is now set to the right position
+//                result.add(cursor.getString(0));
+//            }
+//            new_intent.putExtra("RESULT", result);
+//            MapsActivity.this.startActivity(intent);
+            //String query = intent.getStringExtra(SearchManager.QUERY);
+            //showResults(query);
+        }
+    }
 
-            Intent new_intent = new Intent(this, DisplayResultActivity.class);
-            ArrayList<String> result = new ArrayList<>();
-            for(cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-                // The Cursor is now set to the right position
-                result.add(cursor.getString(0));
-            }
-            new_intent.putExtra("RESULT", result);
-            MapsActivity.this.startActivity(intent);
+    private void showResults(String query) {
+
+        Cursor cursor = new CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
+                new String[]{query}, null);
+        if (cursor == null) {
+            // There are no results
+            //mTextView.setText(getString(R.string.no_results, new Object[]{query}));
+        } else {
+            // Display the number of results
+            int count = cursor.getCount();
+            //String countString = getResources().getQuantityString(R.plurals.search_results,
+            //        count, new Object[] {count, query});
+            //mTextView.setText(countString);
+            Toast.makeText(MapsActivity.this, "WOW: You found "+count+" results!", Toast.LENGTH_SHORT).show();
+            // Specify the columns we want to display in the result
+//            String[] from = new String[] { DictionaryDatabase.KEY_WORD,
+//                    DictionaryDatabase.KEY_DEFINITION };
+//
+//            // Specify the corresponding layout elements where we want the columns to go
+//            int[] to = new int[] { R.id.word,
+//                    R.id.definition };
+//
+//            // Create a simple cursor adapter for the definitions and apply them to the ListView
+//            SimpleCursorAdapter words = new SimpleCursorAdapter(this,
+//                    R.layout.result, cursor, from, to);
+//            mListView.setAdapter(words);
+//
+//            // Define the on-click listener for the list items
+//            mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//
+//                @Override
+//                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                    // Build the Intent used to open WordActivity with a specific word Uri
+//                    Intent wordIntent = new Intent(getApplicationContext(), WordActivity.class);
+//                    Uri data = Uri.withAppendedPath(DictionaryProvider.CONTENT_URI,
+//                            String.valueOf(id));
+//                    wordIntent.setData(data);
+//                    startActivity(wordIntent);
+//                }
+//            });
         }
     }
 
@@ -209,6 +294,28 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         } catch (SecurityException e) {
             e.printStackTrace();
+        }
+        if (currentCameraLongtitude != 0.0){
+            LatLng cameraPosition = new LatLng(currentCameraLatitude, currentCameraLongtitude);
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(cameraPosition));
+        }
+        //roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.415370973562936, -119.84701473265886)));
+        if (latitudeList != null){
+            Location location = mMap.getMyLocation();
+            LatLng currentPos = new LatLng(currentPositionLatitude, currentPositionLongtitude);
+            LatLng targetPos = new LatLng(roomMarker.getPosition().latitude, roomMarker.getPosition().longitude);
+            findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");            /*ArrayList<LatLng> directionPoints = new ArrayList<LatLng>();
+            for (int i = 0; i < directionPoints.size(); i++) {
+                LatLng point = new LatLng(latitudeList[i], longtitudeList[i]);
+                directionPoints.add(point);
+            }
+            Polyline newPolyline;
+            GoogleMap mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
+            PolylineOptions rectLine = new PolylineOptions().width(8).color(Color.RED);
+            for (int i = 0; i < directionPoints.size(); i++) {
+                rectLine.add((LatLng) directionPoints.get(i));
+            }
+            newPolyline = mMap.addPolyline(rectLine);*/
         }
         //marker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.415370973562936, -119.84701473265886)));
         //createBuildingList();
@@ -325,13 +432,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Polyline newPolyline;
         GoogleMap mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
         PolylineOptions rectLine = new PolylineOptions().width(8).color(Color.RED);
+        longtitudeList = new double[directionPoints.size()];
+        latitudeList = new double[directionPoints.size()];
         for (int i = 0; i < directionPoints.size(); i++) {
             rectLine.add((LatLng) directionPoints.get(i));
+            LatLng point = (LatLng) directionPoints.get(i);
+            longtitudeList[i] = point.longitude;
+            latitudeList[i] = point.latitude;
         }
         newPolyline = mMap.addPolyline(rectLine);
     }
 
     public void onZoomToMarkersClick(MenuItem item) {
+        if (landscape){
+            listView.setVisibility(View.VISIBLE);
+            listItems.add("NH1111 : ");
+            adapter.notifyDataSetChanged();
+        }
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         if (roomMarker != null && ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
@@ -356,11 +473,88 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Location location = mMap.getMyLocation();
             LatLng currentPos = new LatLng(location.getLatitude(), location.getLongitude());
             LatLng targetPos = new LatLng(roomMarker.getPosition().latitude, roomMarker.getPosition().longitude);
+            currentPositionLongtitude = currentPos.longitude;
+            currentPositionLatitude = currentPos.latitude;
             findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");
         }
         else{
             return;
         }
+
+    }
+
+    @Override
+<<<<<<< HEAD
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        String[] qry = {args.getString("QUERY")};
+        switch (id) {
+            case DATABASE_LOADER:
+                // Returns a new CursorLoader
+                return new CursorLoader(
+                        getApplicationContext(),   // Parent activity context
+                        DatabaseProvider.CONTENT_URI,
+                        null,
+                        null,     // Projection to return
+                        qry,            // No selection arguments
+                        null             // Default sort order
+                );
+            default:
+                // An invalid id was passed in
+                return null;
+        }
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+=======
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putDouble("roomMarkerLongtitude", roomMarkerLongtitude);
+        outState.putDouble("roomMarkerLatitude", roomMarkerLatitude);
+        outState.putDouble("currentCameraLongtitude", currentCameraLongtitude);
+        outState.putDouble("currentCameraLatitude", currentCameraLatitude);
+        outState.putDoubleArray("longtitudeList", longtitudeList);
+        outState.putDoubleArray("latitudeList", latitudeList);
+        outState.putDouble("currentPositionLongtitude", currentPositionLongtitude);
+        outState.putDouble("currentPositionLatitude", currentPositionLatitude);
+
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        roomMarkerLongtitude = savedInstanceState.getDouble("roomMarkerLongtitude");
+        roomMarkerLatitude = savedInstanceState.getDouble("roomMarkerLatitude");
+        currentCameraLatitude = savedInstanceState.getDouble("currentCameraLatitude");
+        currentCameraLongtitude = savedInstanceState.getDouble("currentCameraLongtitude");
+        latitudeList = savedInstanceState.getDoubleArray("latitudeList");
+        longtitudeList = savedInstanceState.getDoubleArray("longtitudeList");
+        currentPositionLongtitude = savedInstanceState.getDouble("currentPositionLongtitude");
+        currentPositionLatitude = savedInstanceState.getDouble("currentPositionLatitude");
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        if (cameraPos != null) {
+            mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPos));
+            cameraPos = null;
+        }
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        if (mMap != null){
+            currentCameraLatitude = mMap.getCameraPosition().target.latitude;
+            currentCameraLongtitude = mMap.getCameraPosition().target.longitude;
+        }
+>>>>>>> refs/remotes/origin/master
 
     }
 }
