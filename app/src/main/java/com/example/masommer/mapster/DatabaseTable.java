@@ -70,6 +70,7 @@ public class DatabaseTable extends ListActivity{
             loadAll();
         }
 
+
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             Log.w(TAG, "Upgrading database from version " + oldVersion + " to "
@@ -123,8 +124,6 @@ public class DatabaseTable extends ListActivity{
 
     public Cursor getWordMatches(String query, String[] columns) {
 
-        //TODO: fix getWordMatches to take both building and room number
-
         String selection = COL_ROOM + " MATCH ?";
         String[] selectionArgs = new String[] {query+"*"};
 
@@ -145,15 +144,6 @@ public class DatabaseTable extends ListActivity{
             return null;
         }
         return cursor;
-    }
-
-    private void handleIntent(Intent intent) {
-
-        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            String query = intent.getStringExtra(SearchManager.QUERY);
-            Cursor c = getWordMatches(query, null);
-            //process Cursor and display results
-        }
     }
 
 
