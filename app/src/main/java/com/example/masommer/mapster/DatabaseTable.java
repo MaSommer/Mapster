@@ -1,10 +1,14 @@
 package com.example.masommer.mapster;
 
+import android.app.SearchManager;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -16,7 +20,7 @@ import java.io.InputStreamReader;
 /**
  * Created by agmal_000 on 07.03.2016.
  */
-public class DatabaseTable {
+public class DatabaseTable extends {
 
     private static final String TAG = "RoomDatabase";
 
@@ -58,6 +62,7 @@ public class DatabaseTable {
         public void onCreate(SQLiteDatabase db) {
             mDatabase = db;
             mDatabase.execSQL(FTS_TABLE_CREATE);
+            loadAll();
         }
 
         @Override
@@ -68,7 +73,7 @@ public class DatabaseTable {
             onCreate(db);
         }
 
-        private void loadDictionary() {
+        private void loadAll() {
             new Thread(new Runnable() {
                 public void run() {
                     try {
@@ -110,6 +115,38 @@ public class DatabaseTable {
             return mDatabase.insert(FTS_VIRTUAL_TABLE, null, initialValues);
         }
 
+    }
+
+    public Cursor getWordMatches(String query, String[] columns) {
+        String selection = COL_BUILDING + " MATCH ?";
+        String[] selectionArgs = new String[] {query+"*"};
+
+        return query(selection, selectionArgs, columns);
+    }
+
+    private Cursor query(String selection, String[] selectionArgs, String[] columns) {
+        SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
+        builder.setTables(FTS_VIRTUAL_TABLE);
+
+        Cursor cursor = builder.query(mDatabaseOpenHelper.getReadableDatabase(),
+                columns, selection, selectionArgs, null, null, null);
+
+        if (cursor == null) {
+            return null;
+        } else if (!cursor.moveToFirst()) {
+            cursor.close();
+            return null;
+        }
+        return cursor;
+    }
+
+    private void handleIntent(Intent intent) {
+
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            String query = intent.getStringExtra(SearchManager.QUERY);
+            Cursor c = getWordMatches(query, null);
+            //process Cursor and display results
+        }
     }
 
 
