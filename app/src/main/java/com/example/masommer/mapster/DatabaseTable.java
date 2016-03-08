@@ -72,7 +72,7 @@ public class DatabaseTable {
             new Thread(new Runnable() {
                 public void run() {
                     try {
-                        loadWords();
+                        loadLocations();
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -80,19 +80,19 @@ public class DatabaseTable {
             }).start();
         }
 
-        private void loadWords() throws IOException {
+        private void loadLocations() throws IOException {
             final Resources resources = mHelperContext.getResources();
-            InputStream inputStream = resources.openRawResource(R.raw.definitions);
+            InputStream inputStream = resources.openRawResource(R.raw.room_and_buildings);
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 
             try {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    String[] strings = TextUtils.split(line, "-");
-                    if (strings.length < 2) continue;
-                    long id = addLocation(strings[0].trim(), strings[1].trim());
+                    String[] strings = TextUtils.split(line, " ");
+                    if (strings.length < 4) continue;
+                    long id = addLocation(strings[0].trim(), strings[1].trim(), strings[2].trim(), strings[3].trim());
                     if (id < 0) {
-                        Log.e(TAG, "unable to add word: " + strings[0].trim());
+                        Log.e(TAG, "unable to add location: " + strings[0].trim() + " " + strings[1].trim());
                     }
                 }
             } finally {
@@ -102,8 +102,10 @@ public class DatabaseTable {
 
         public long addLocation(String building, String room, String lat, String lon) {
             ContentValues initialValues = new ContentValues();
-            initialValues.put(COL_WORD, word);
-            initialValues.put(COL_DEFINITION, definition);
+            initialValues.put(COL_BUILDING, building);
+            initialValues.put(COL_ROOM, room);
+            initialValues.put(COL_LAT, lat);
+            initialValues.put(COL_LONG, lon);
 
             return mDatabase.insert(FTS_VIRTUAL_TABLE, null, initialValues);
         }
