@@ -105,13 +105,25 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.raw.north_hall_v3);
         Log.i("bitmap", ""+bitmap);
         BitmapDescriptor bs = BitmapDescriptorFactory.fromBitmap(bitmap);
-        Log.i("bs", ""+bs);
+        Log.i("bs", "" + bs);
 
         LatLng northHallPos = new LatLng(34.415135360789565, -119.84668038419226);
         GroundOverlayOptions newarkMap = new GroundOverlayOptions()
                 .image(bs)
                 .position(northHallPos, 131f, 99f);
         mMap.addGroundOverlay(newarkMap);
+
+
+        Bitmap kerr = BitmapFactory.decodeResource(getResources(), R.raw.kerr_hall);
+        Log.i("bitmap", ""+kerr);
+        BitmapDescriptor kerr_bs = BitmapDescriptorFactory.fromBitmap(kerr);
+        Log.i("bs", "" + kerr_bs);
+        LatLng kerrHallPos = new LatLng(34.41455997621988,-119.84687080011797);
+        GroundOverlayOptions newark = new GroundOverlayOptions()
+                .image(kerr_bs)
+                .position(kerrHallPos, 93.8f, 69f);
+        mMap.addGroundOverlay(newark);
+
         //Zoom in to UCSB campus
         CameraPosition cp = new CameraPosition.Builder()
                 .target(northHallPos)
@@ -144,7 +156,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_search, menu);
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        android.support.v7.widget.SearchView searchView = (android.support.v7.widget.SearchView) menu.findItem(R.id.action_search).getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         return super.onCreateOptionsMenu(menu);
     }
