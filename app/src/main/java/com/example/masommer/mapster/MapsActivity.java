@@ -2,7 +2,9 @@ package com.example.masommer.mapster;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -31,11 +33,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+<<<<<<< HEAD
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+=======
+import android.widget.Toast;
+>>>>>>> master
 
 import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -100,13 +107,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private CameraPosition cameraPos;
 
-
+    private DatabaseTable db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
+        db = new DatabaseTable(this);
         lm = (LocationManager) getSystemService(LOCATION_SERVICE);
         // Creating a criteria object to retrieve provider
         Criteria criteria = new Criteria();
@@ -134,6 +141,33 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    protected void onNewIntent(Intent intent) {
+        handleIntent(intent);
+    }
+
+    private void handleIntent(Intent intent) {
+       /* if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+            // handles a click on a search suggestion; launches activity to show word
+            Intent wordIntent = new Intent(this, WordActivity.class);
+            wordIntent.setData(intent.getData());
+            startActivity(wordIntent);
+        } else */
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            // handles a search query
+            String query = intent.getStringExtra(SearchManager.QUERY);
+            Cursor cursor = db.getWordMatches(query, null);
+
+            Intent new_intent = new Intent(this, DisplayResultActivity.class);
+            ArrayList<String> result = new ArrayList<>();
+            for(cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+                // The Cursor is now set to the right position
+                result.add(cursor.getString(0));
+            }
+            new_intent.putExtra("RESULT", result);
+            MapsActivity.this.startActivity(intent);
+        }
+    }
+
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
@@ -152,6 +186,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     MY_PERMISSION_LOCATION_ACCESS);
         }
+
+
         mMap = googleMap;
         mMap.setOnMapClickListener(this);
         //Add north hall to map
@@ -196,6 +232,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .zoom(16)
                 .build();
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cp));
+
+        //for testing
+        roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.41447398728048, -119.8470713943243)));
+
         //Set my location
         try {
             mMap.setMyLocationEnabled(true);
@@ -362,14 +402,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
 
-            Location myLocation = lm.getLastKnownLocation(provider);
+            Location myLocation = mMap.getMyLocation();
             builder.include(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()));
         } else {
             return;
         }
         builder.include(roomMarker.getPosition());
         LatLngBounds bounds = builder.build();
-        int padding = 0; // offset from edges of the map in pixels
+        int padding = 50; // offset from edges of the map in pixels
         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
         mMap.animateCamera(cu);
     }
