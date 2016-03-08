@@ -83,6 +83,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private ArrayList<LatLng> markerPoints = new ArrayList<LatLng>();
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -184,13 +185,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapClick(LatLng var1) {
         //marker.remove();
         Context context = getApplicationContext();
-        Log.i("lat", "" + var1.latitude);
-        Log.i("long", "" + var1.longitude);
+        markerPoints.add(var1);
         //marker = mMap.addMarker(new MarkerOptions().position(var1));
-
-
-
-
+        String s = "";
+        for (LatLng latLng: markerPoints) {
+            s+=latLng.latitude + " " + latLng.longitude + "\n";
+        }
+        Log.i("string", s);
     }
 
     @Override
