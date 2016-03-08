@@ -1,6 +1,7 @@
 package com.example.masommer.mapster;
 
 import android.Manifest;
+<<<<<<< HEAD
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -12,6 +13,16 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+=======
+import android.app.SearchManager;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationManager;
+>>>>>>> origin/master
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
@@ -20,9 +31,11 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.SearchView;
 
 import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -32,6 +45,8 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -58,6 +73,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private GoogleMap mMap;
     private final int MY_PERMISSION_LOCATION_ACCESS = 1;
+    private Marker roomMarker;
+    private LocationManager lm;
+    private String provider;
 
     private ArrayList<Building> buildingList = new ArrayList<Building>();
 
@@ -69,6 +87,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        lm = (LocationManager) getSystemService(LOCATION_SERVICE);
+        // Creating a criteria object to retrieve provider
+        Criteria criteria = new Criteria();
+        // Getting the name of the best provider
+        provider = lm.getBestProvider(criteria, true);
+
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -103,7 +128,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.raw.north_hall_v3);
         Log.i("bitmap", ""+bitmap);
         BitmapDescriptor bs = BitmapDescriptorFactory.fromBitmap(bitmap);
-        Log.i("bs", ""+bs);
+        Log.i("bs", "" + bs);
 
         LatLng northHallPos = new LatLng(34.415135360789565, -119.84668038419226);
 
@@ -111,6 +136,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .image(bs)
                 .position(northHallPos, 131f, 99f);
         mMap.addGroundOverlay(newarkMap);
+
+
+        Bitmap kerr = BitmapFactory.decodeResource(getResources(), R.raw.kerr_hall);
+        Log.i("bitmap", ""+kerr);
+        BitmapDescriptor kerr_bs = BitmapDescriptorFactory.fromBitmap(kerr);
+        Log.i("bs", "" + kerr_bs);
+        LatLng kerrHallPos = new LatLng(34.41455997621988,-119.84687080011797);
+        GroundOverlayOptions newark = new GroundOverlayOptions()
+                .image(kerr_bs)
+                .position(kerrHallPos, 93.8f, 69f);
+        mMap.addGroundOverlay(newark);
+
         //Zoom in to UCSB campus
         CameraPosition cp = new CameraPosition.Builder()
                 .target(northHallPos)
@@ -142,6 +179,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_search, menu);
+
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        android.support.v7.widget.SearchView searchView = (android.support.v7.widget.SearchView) menu.findItem(R.id.action_search).getActionView();
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setSubmitButtonEnabled(true);
+
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -212,6 +255,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+<<<<<<< HEAD
     public void findDirections(double fromPositionDoubleLat, double fromPositionDoubleLong, double toPositionDoubleLat, double toPositionDoubleLong, String mode)
     {
         Map<String, String> map = new HashMap<String, String>();
@@ -235,5 +279,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             rectLine.add((LatLng) directionPoints.get(i));
         }
         newPolyline = mMap.addPolyline(rectLine);
+=======
+    public void onZoomToMarkersClick(MenuItem item) {
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        if(roomMarker!=null && ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED){
+
+                Location myLocation = lm.getLastKnownLocation(provider);
+                builder.include(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()));
+            }else{
+                return;
+            }
+        builder.include(roomMarker.getPosition());
+        LatLngBounds bounds = builder.build();
+        int padding = 0; // offset from edges of the map in pixels
+        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+        mMap.animateCamera(cu);
+>>>>>>> origin/master
     }
 }
