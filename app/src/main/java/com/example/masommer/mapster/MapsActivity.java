@@ -1,6 +1,19 @@
 package com.example.masommer.mapster;
 
 import android.Manifest;
+<<<<<<< HEAD
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationManager;
+import android.net.Uri;
+import android.os.AsyncTask;
+=======
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -9,6 +22,7 @@ import android.graphics.BitmapFactory;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
+>>>>>>> origin/master
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
@@ -34,6 +48,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -41,9 +59,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener {
@@ -56,6 +78,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String provider;
 
     private ArrayList<Building> buildingList = new ArrayList<Building>();
+
+    private ArrayList<LatLng> markerPoints = new ArrayList<LatLng>();
+
 
 
 
@@ -74,8 +99,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        //createBuildingList();
-        //placeMarkers();
 
     }
 
@@ -108,6 +131,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.i("bs", "" + bs);
 
         LatLng northHallPos = new LatLng(34.415135360789565, -119.84668038419226);
+
         GroundOverlayOptions newarkMap = new GroundOverlayOptions()
                 .image(bs)
                 .position(northHallPos, 131f, 99f);
@@ -127,7 +151,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //Zoom in to UCSB campus
         CameraPosition cp = new CameraPosition.Builder()
                 .target(northHallPos)
-                .zoom(20)
+                .zoom(16)
                 .build();
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cp));
         //Set my location
@@ -138,7 +162,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         catch (SecurityException e){
             e.printStackTrace();
         }
-
+        createBuildingList();
     }
 
     @Override
@@ -190,7 +214,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     building = new Building(output[0]);
                     createNewBuilding = false;
                 }
-                if (line.isEmpty()){
+                Log.i("Line", "" + output);
+                if (line.equals("STOP")){
                     createNewBuilding = true;
                     buildingList.add(building);
                 }
@@ -215,19 +240,46 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void placeMarkers(){
         for (Building building : buildingList) {
+            Log.i("building", ""+building);
             Iterator it = building.getBuilding().entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry pair = (Map.Entry) it.next();
                 Log.i("key", ""+pair.getKey());
                 Log.i("value", ""+pair.getValue());
-                LatLng sydney = (LatLng) pair.getValue();
-                mMap.addMarker(new MarkerOptions().position(sydney).title("Marker at" + pair.getKey()));
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+                LatLng pos = (LatLng) pair.getValue();
+                Log.i("pos", ""+pos);
+                Log.i("map", "" + mMap);
+                mMap.addMarker(new MarkerOptions().position(pos));
                 it.remove(); // avoids a ConcurrentModificationException
             }
         }
     }
 
+<<<<<<< HEAD
+    public void findDirections(double fromPositionDoubleLat, double fromPositionDoubleLong, double toPositionDoubleLat, double toPositionDoubleLong, String mode)
+    {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put(GetDirectionsAsyncTask.USER_CURRENT_LAT, String.valueOf(fromPositionDoubleLat));
+        map.put(GetDirectionsAsyncTask.USER_CURRENT_LONG, String.valueOf(fromPositionDoubleLong));
+        map.put(GetDirectionsAsyncTask.DESTINATION_LAT, String.valueOf(toPositionDoubleLat));
+        map.put(GetDirectionsAsyncTask.DESTINATION_LONG, String.valueOf(toPositionDoubleLong));
+        map.put(GetDirectionsAsyncTask.DIRECTIONS_MODE, mode);
+
+        GetDirectionsAsyncTask asyncTask = new GetDirectionsAsyncTask(this);
+        asyncTask.execute(map);
+    }
+
+    public void handleGetDirectionsResult(ArrayList directionPoints)
+    {
+        Polyline newPolyline;
+        GoogleMap mMap = ((SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
+        PolylineOptions rectLine = new PolylineOptions().width(8).color(Color.RED);
+        for(int i = 0 ; i < directionPoints.size() ; i++)
+        {
+            rectLine.add((LatLng) directionPoints.get(i));
+        }
+        newPolyline = mMap.addPolyline(rectLine);
+=======
     public void onZoomToMarkersClick(MenuItem item) {
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         if(roomMarker!=null && ContextCompat.checkSelfPermission(this,
@@ -244,5 +296,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         int padding = 0; // offset from edges of the map in pixels
         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
         mMap.animateCamera(cu);
+>>>>>>> origin/master
     }
 }
