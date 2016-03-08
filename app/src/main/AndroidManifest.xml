@@ -45,6 +45,9 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/maps_apikey" />
+        <meta-data
+            android:name="android.app.searchable"
+            android:resource="@xml/searchable"/>
 
         <activity
             android:name=".MapsActivity"
@@ -55,9 +58,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".MapsAct"
-            android:label="@string/title_activity_maps"></activity>
+            android:label="@string/title_activity_maps">
+        </activity>
+
     </application>
 
 </manifest>

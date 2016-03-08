@@ -55,4 +55,76 @@ NH 1201B 34.41494115154943 -119.84658524394035
 NH 1201C 34.41494198132381 -119.84664089977741
 NH 1201D 34.41495055565832 -119.8466942086816
 NH 1201 34.41491487535728 -119.84647259116173
+<<<<<<< HEAD
 STOP
+=======
+Kerr Hall 1150
+Kerr Hall 1150A
+Kerr Hall 1150M
+Kerr Hall 1176
+Kerr Hall 1174
+Kerr Hall 1174A
+Kerr Hall 1174B
+Kerr Hall 1172
+Kerr Hall 1172A
+Kerr Hall 1130
+Kerr Hall 1130A
+Kerr Hall 1130B
+Kerr Hall 1130C
+Kerr Hall 1130D
+Kerr Hall 1124
+Kerr Hall 1124A
+Kerr Hall 1124B
+Kerr Hall 1124C
+Kerr Hall 1124D
+Kerr Hall 1200B
+Kerr Hall 1207
+Kerr Hall 1205
+Kerr Hall 1205A
+Kerr Hall 1205B
+Kerr Hall 1205C
+Kerr Hall 1215
+Kerr Hall 1215A
+Kerr Hall 1215B
+Kerr Hall 1215C
+Kerr Hall 1202
+Kerr Hall 1204
+Kerr Hall 1204A
+Kerr Hall 1210
+Kerr Hall 1210A
+Kerr Hall 1120
+Kerr Hall 1218
+Kerr Hall 1110
+Kerr Hall 1110A
+Kerr Hall 1120
+Kerr Hall 1120A
+Kerr Hall 1120B
+Kerr Hall 1120C
+Kerr Hall 1120D
+Kerr Hall 1120E
+Kerr Hall 1120F
+Kerr Hall 1120G
+Kerr Hall 1120H
+Kerr Hall 1120J
+Kerr Hall 1120N
+Kerr Hall 1120P
+Kerr Hall 1120Q
+Kerr Hall 1120R
+Kerr Hall 1120S
+Kerr Hall 1160
+Kerr Hall 1160B
+Kerr Hall 1160C
+Kerr Hall 1160D
+Kerr Hall 1160E
+Kerr Hall 1180
+Kerr Hall 1180A
+Kerr Hall 1180B
+Kerr Hall 1190
+Kerr Hall 6009
+Kerr Hall 6014
+Kerr Hall 6012
+Kerr Hall 6016
+Kerr Hall 6017
+Kerr Hall 6019
+Kerr Hall 6020
+>>>>>>> origin/master

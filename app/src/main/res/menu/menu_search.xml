@@ -11,4 +11,11 @@
         android:icon="@android:drawable/ic_menu_search"
         app:showAsAction="always"/>
 
+    <item
+        android:id="@+id/zoom_to_markers"
+        android:orderInCategory="100"
+        android:title="zoom"
+        android:icon="@android:drawable/ic_menu_view"
+        app:showAsAction="ifRoom"
+        android:onClick="onZoomToMarkersClick"/>
 </menu>
