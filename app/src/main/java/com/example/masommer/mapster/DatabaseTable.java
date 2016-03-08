@@ -20,7 +20,7 @@ import java.io.InputStreamReader;
 /**
  * Created by agmal_000 on 07.03.2016.
  */
-public class DatabaseTable extends {
+public class DatabaseTable {
 
     private static final String TAG = "RoomDatabase";
 
@@ -118,6 +118,9 @@ public class DatabaseTable extends {
     }
 
     public Cursor getWordMatches(String query, String[] columns) {
+
+        //TODO: fix getWordMatches to take both building and room number
+
         String selection = COL_BUILDING + " MATCH ?";
         String[] selectionArgs = new String[] {query+"*"};
 
