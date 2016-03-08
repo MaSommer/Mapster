@@ -1,7 +1,6 @@
 package com.example.masommer.mapster;
 
 import android.Manifest;
-<<<<<<< HEAD
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -13,7 +12,6 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
-=======
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -22,7 +20,6 @@ import android.graphics.BitmapFactory;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
->>>>>>> origin/master
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
@@ -82,8 +79,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private ArrayList<LatLng> markerPoints = new ArrayList<LatLng>();
 
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -126,7 +121,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.raw.north_hall_v3);
-        Log.i("bitmap", ""+bitmap);
+        Log.i("bitmap", "" + bitmap);
         BitmapDescriptor bs = BitmapDescriptorFactory.fromBitmap(bitmap);
         Log.i("bs", "" + bs);
 
@@ -139,10 +134,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
         Bitmap kerr = BitmapFactory.decodeResource(getResources(), R.raw.kerr_hall);
-        Log.i("bitmap", ""+kerr);
+        Log.i("bitmap", "" + kerr);
         BitmapDescriptor kerr_bs = BitmapDescriptorFactory.fromBitmap(kerr);
         Log.i("bs", "" + kerr_bs);
-        LatLng kerrHallPos = new LatLng(34.41455997621988,-119.84687080011797);
+        LatLng kerrHallPos = new LatLng(34.41455997621988, -119.84687080011797);
         GroundOverlayOptions newark = new GroundOverlayOptions()
                 .image(kerr_bs)
                 .position(kerrHallPos, 93.8f, 69f);
@@ -155,14 +150,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .build();
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cp));
         //Set my location
-        try{
+        try {
             mMap.setMyLocationEnabled(true);
 
-        }
-        catch (SecurityException e){
+        } catch (SecurityException e) {
             e.printStackTrace();
         }
-        createBuildingList();
+        //createBuildingList();
     }
 
     @Override
@@ -189,14 +183,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onLocationChanged(Location var1){
+    public void onLocationChanged(Location var1) {
 
     }
 
-    public void createBuildingList(){
+    public void createBuildingList() {
         File sdcard = Environment.getExternalStorageDirectory();
 
-        File file = new File(sdcard,"file.txt");
+        File file = new File(sdcard, "file.txt");
 
         StringBuilder text = new StringBuilder();
         InputStream is;
@@ -210,16 +204,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             while ((line = reader.readLine()) != null) {
                 String[] output;
                 output = line.split(" ");
-                if (createNewBuilding){
+                if (createNewBuilding) {
                     building = new Building(output[0]);
                     createNewBuilding = false;
                 }
                 Log.i("Line", "" + output);
-                if (line.equals("STOP")){
+                if (line.equals("STOP")) {
                     createNewBuilding = true;
                     buildingList.add(building);
-                }
-                else{
+                } else {
                     double latitude = Double.parseDouble(output[2]);
                     double longtitude = Double.parseDouble(output[3]);
                     LatLng latLng = new LatLng(latitude, longtitude);
@@ -230,24 +223,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             }
             reader.close();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             //You'll need to add proper error handling here
         }
 
     }
 
-    public void placeMarkers(){
+    public void placeMarkers() {
         for (Building building : buildingList) {
-            Log.i("building", ""+building);
+            Log.i("building", "" + building);
             Iterator it = building.getBuilding().entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry pair = (Map.Entry) it.next();
-                Log.i("key", ""+pair.getKey());
-                Log.i("value", ""+pair.getValue());
+                Log.i("key", "" + pair.getKey());
+                Log.i("value", "" + pair.getValue());
                 LatLng pos = (LatLng) pair.getValue();
-                Log.i("pos", ""+pos);
+                Log.i("pos", "" + pos);
                 Log.i("map", "" + mMap);
                 mMap.addMarker(new MarkerOptions().position(pos));
                 it.remove(); // avoids a ConcurrentModificationException
@@ -255,9 +247,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-<<<<<<< HEAD
-    public void findDirections(double fromPositionDoubleLat, double fromPositionDoubleLong, double toPositionDoubleLat, double toPositionDoubleLong, String mode)
-    {
+
+    public void findDirections(double fromPositionDoubleLat, double fromPositionDoubleLong, double toPositionDoubleLat, double toPositionDoubleLong, String mode) {
         Map<String, String> map = new HashMap<String, String>();
         map.put(GetDirectionsAsyncTask.USER_CURRENT_LAT, String.valueOf(fromPositionDoubleLat));
         map.put(GetDirectionsAsyncTask.USER_CURRENT_LONG, String.valueOf(fromPositionDoubleLong));
@@ -269,33 +260,32 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         asyncTask.execute(map);
     }
 
-    public void handleGetDirectionsResult(ArrayList directionPoints)
-    {
+    public void handleGetDirectionsResult(ArrayList directionPoints) {
         Polyline newPolyline;
-        GoogleMap mMap = ((SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
+        GoogleMap mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
         PolylineOptions rectLine = new PolylineOptions().width(8).color(Color.RED);
-        for(int i = 0 ; i < directionPoints.size() ; i++)
-        {
+        for (int i = 0; i < directionPoints.size(); i++) {
             rectLine.add((LatLng) directionPoints.get(i));
         }
         newPolyline = mMap.addPolyline(rectLine);
-=======
+    }
+
     public void onZoomToMarkersClick(MenuItem item) {
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
-        if(roomMarker!=null && ContextCompat.checkSelfPermission(this,
+        if (roomMarker != null && ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED){
+                == PackageManager.PERMISSION_GRANTED) {
 
-                Location myLocation = lm.getLastKnownLocation(provider);
-                builder.include(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()));
-            }else{
-                return;
-            }
+            Location myLocation = lm.getLastKnownLocation(provider);
+            builder.include(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()));
+        } else {
+            return;
+        }
         builder.include(roomMarker.getPosition());
         LatLngBounds bounds = builder.build();
         int padding = 0; // offset from edges of the map in pixels
         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
         mMap.animateCamera(cu);
->>>>>>> origin/master
     }
 }
+
