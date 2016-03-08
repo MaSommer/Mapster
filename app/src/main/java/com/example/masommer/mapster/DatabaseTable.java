@@ -37,10 +37,6 @@ public class DatabaseTable extends ListActivity{
 
     private final DatabaseOpenHelper mDatabaseOpenHelper;
 
-    public DatabaseTable() {
-        mDatabaseOpenHelper = new DatabaseOpenHelper(this);
-    }
-
     public DatabaseTable(Context context) {
         mDatabaseOpenHelper = new DatabaseOpenHelper(context);
     }
@@ -69,6 +65,7 @@ public class DatabaseTable extends ListActivity{
             mDatabase.execSQL(FTS_TABLE_CREATE);
             loadAll();
         }
+
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
@@ -123,8 +120,6 @@ public class DatabaseTable extends ListActivity{
 
     public Cursor getWordMatches(String query, String[] columns) {
 
-        //TODO: fix getWordMatches to take both building and room number
-
         String selection = COL_ROOM + " MATCH ?";
         String[] selectionArgs = new String[] {query+"*"};
 
@@ -145,15 +140,6 @@ public class DatabaseTable extends ListActivity{
             return null;
         }
         return cursor;
-    }
-
-    private void handleIntent(Intent intent) {
-
-        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            String query = intent.getStringExtra(SearchManager.QUERY);
-            Cursor c = getWordMatches(query, null);
-            //process Cursor and display results
-        }
     }
 
 
