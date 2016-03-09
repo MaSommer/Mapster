@@ -164,6 +164,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      */
     private GoogleApiClient client;
     private Toolbar editToolbar;
+    private Marker markerToDelete;
 
 
     @Override
@@ -287,7 +288,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         double latitude = Double.parseDouble(c.getString(latIndex));
         double longitude = Double.parseDouble(c.getString(longIndex));
         LatLng roomPoint = new LatLng(latitude,longitude);
-        roomMarker.remove();
+        if (roomMarker != null){
+            roomMarker.remove();
+        }
         roomMarker = mMap.addMarker(new MarkerOptions().position(roomPoint));
         zoomToRoom(roomMarker.getPosition());
     }
@@ -967,7 +970,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void onEditFavouriteClicked(MenuItem item){
-        Log.i("favs on edit", ""+favourites);
+        Log.i("favs on edit", "" + favourites);
         favouritesMarkersList = new ArrayList<Marker>();
         mode = EDIT_MODE;
         editToolbar.setVisibility(View.VISIBLE);
@@ -990,11 +993,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void onDeleteClicked(MenuItem item){
-        Log.i("favs delte", ""+favourites);
-
         onMarkerClickRemove = true;
-        String data = "Click on the marker you want to remove";
-        Toast.makeText(this, data, Toast.LENGTH_LONG).show();
+        if (markerToDelete != null){
+            marker.remove();
+            favourites.remove(marker.getId());
+            favouritesMarkersList.remove(marker);
+            markerToDelete = null;
+        }
     }
 
     public void loadFavourites(){
@@ -1081,14 +1086,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        if (onMarkerClickRemove && mode == EDIT_MODE){
-            onMarkerClickRemove = false;
-            Log.i("favs", ""+favourites);
-            Log.i("pussy", "sniff");
-            marker.remove();
-            favourites.remove(marker.getId());
-            favouritesMarkersList.remove(marker);
-            removeMarkerFromMemory(marker);
+        if (mode == EDIT_MODE){
+            markerToDelete = marker;
         }
         else if (!onMarkerClickRemove && mode == EDIT_MODE){
 
