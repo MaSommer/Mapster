@@ -24,6 +24,7 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.BaseColumns;
+import android.provider.ContactsContract;
 
 /**
  * Provides access to the dictionary database.
@@ -104,7 +105,7 @@ public class DatabaseProvider extends ContentProvider {
                 }
                 return search(selectionArgs[0]);
             case GET_ROOM:
-                return getWord(uri);
+                return getRoom(uri);
             case REFRESH_SHORTCUT:
                 return refreshShortcut(uri);
             default:
@@ -116,11 +117,11 @@ public class DatabaseProvider extends ContentProvider {
         query = query.toLowerCase();
         String[] columns = new String[] {
                 BaseColumns._ID,
-                DatabaseTable.COL_ROOM};
+                DatabaseTable.COL_ROOM,
 //                DictionaryDatabase.KEY_DEFINITION,
 //       /* SearchManager.SUGGEST_COLUMN_SHORTCUT_ID,
 //                        (only if you want to refresh shortcuts) */
-//                SearchManager.SUGGEST_COLUMN_INTENT_DATA_ID};
+                SearchManager.SUGGEST_COLUMN_INTENT_DATA_ID}; //changed from DATA_ID
 
         return mDatabase.getWordMatches(query, columns);
     }
@@ -129,16 +130,20 @@ public class DatabaseProvider extends ContentProvider {
         query = query.toLowerCase();
         String[] columns = new String[] {
                 BaseColumns._ID,
-                DatabaseTable.COL_ROOM};
+                DatabaseTable.COL_ROOM,
+                DatabaseTable.COL_LONG,
+                DatabaseTable.COL_LAT};
 //                DictionaryDatabase.KEY_DEFINITION};
 
         return mDatabase.getWordMatches(query, columns);
     }
 
-    private Cursor getWord(Uri uri) {
+    private Cursor getRoom(Uri uri) {
         String rowId = uri.getLastPathSegment();
         String[] columns = new String[] {
-                DatabaseTable.COL_ROOM};
+                DatabaseTable.COL_ROOM,
+                DatabaseTable.COL_LAT,
+                DatabaseTable.COL_LONG};
 //                DictionaryDatabase.KEY_DEFINITION};
 
         return mDatabase.getRoom(rowId, columns);
@@ -153,14 +158,14 @@ public class DatabaseProvider extends ContentProvider {
        * suggestion query.
        */
         String rowId = uri.getLastPathSegment();
-//        String[] columns = new String[] {
+        String[] columns = new String[] {"*"};
 //                BaseColumns._ID,
 //                DictionaryDatabase.KEY_WORD,
 //                DictionaryDatabase.KEY_DEFINITION,
 //                SearchManager.SUGGEST_COLUMN_SHORTCUT_ID,
 //                SearchManager.SUGGEST_COLUMN_INTENT_DATA_ID};
 
-        return mDatabase.getRoom(rowId, null);
+        return mDatabase.getRoom(rowId, columns);
     }
 
     /**
