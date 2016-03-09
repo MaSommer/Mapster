@@ -1,6 +1,7 @@
 package com.example.masommer.mapster;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
@@ -38,12 +39,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-<<<<<<< HEAD
 import android.widget.AdapterView;
-=======
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
->>>>>>> refs/remotes/origin/master
 import android.widget.Toast;
 
 import com.google.android.gms.location.LocationListener;
@@ -83,12 +81,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-<<<<<<< HEAD
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor>, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener {
-=======
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener, BlankFragment.OnFragmentInteractionListener {
->>>>>>> Martin
 
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor>, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener, BlankFragment.OnFragmentInteractionListener {
 
     private GoogleMap mMap;
     private final int MY_PERMISSION_LOCATION_ACCESS = 1;
@@ -100,6 +94,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private boolean landscape;
     private Polyline newPolyline;
     private BlankFragment fragment;
+    private android.support.v4.app.FragmentManager fragmentManager;
+    private android.support.v4.app.FragmentTransaction fragmentTransaction;
+
+
 
     private ListView listView;
     private ArrayList<Building> buildingList = new ArrayList<Building>();
@@ -119,6 +117,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private CameraPosition cameraPos;
 
+    private boolean fragmentUpWhenRotationChanged;
+
     private DatabaseTable db;
 
     @Override
@@ -126,6 +126,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
 
         //db = new DatabaseTable(this);
+        if (savedInstanceState != null && savedInstanceState.getBoolean("fragmentUpWhenRotationChanged")){
+            fragment = new BlankFragment();
+            fragment.show(getFragmentManager(), "Diag");
+        }
+        db = new DatabaseTable(this);
         lm = (LocationManager) getSystemService(LOCATION_SERVICE);
         // Creating a criteria object to retrieve provider
         Criteria criteria = new Criteria();
@@ -148,9 +153,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     listItems);
             listView.setAdapter(adapter);
         }
-
-
-
+        fragmentManager = getSupportFragmentManager();
+        fragmentTransaction = fragmentManager.beginTransaction();
     }
 
     protected void onNewIntent(Intent intent) {
@@ -183,9 +187,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private void showResults(String query) {
+    /*private void showResults(String query) {
 
-        Cursor cursor = new CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
+        Cursor cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
                 new String[]{query}, null);
         if (cursor == null) {
             // There are no results
@@ -224,7 +228,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //                }
 //            });
         }
-    }
+    }*/
 
     /**
      * Manipulates the map once available.
@@ -235,6 +239,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
      */
+
+
+
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         if (ContextCompat.checkSelfPermission(this,
@@ -437,11 +445,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void onZoomToMarkersClick(MenuItem item) {
-        if (landscape){
+        /*if (landscape){
             listView.setVisibility(View.VISIBLE);
             listItems.add("NH1111 : ");
             adapter.notifyDataSetChanged();
-        }
+        }*/
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         if (roomMarker != null && ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
@@ -501,18 +509,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void onInfoClicked(MenuItem item){
+        fragmentUpWhenRotationChanged = true;
         fragment = new BlankFragment();
         fragment.show(getFragmentManager(), "Diag");
     }
 
-    @Override
-<<<<<<< HEAD
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         String[] qry = {args.getString("QUERY")};
         switch (id) {
             case DATABASE_LOADER:
                 // Returns a new CursorLoader
-                return new CursorLoader(
+                return new android.support.v4.content.CursorLoader(
                         getApplicationContext(),   // Parent activity context
                         DatabaseProvider.CONTENT_URI,
                         null,
@@ -527,13 +534,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-
-    }
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {}
 
     @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-=======
+    public void onLoaderReset(Loader<Cursor> loader) {}
+
+    @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putDouble("roomMarkerLongtitude", roomMarkerLongtitude);
@@ -544,6 +550,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         outState.putDoubleArray("latitudeList", latitudeList);
         outState.putDouble("currentPositionLongtitude", currentPositionLongtitude);
         outState.putDouble("currentPositionLatitude", currentPositionLatitude);
+        outState.putBoolean("fragmentUpWhenRotationChanged", fragmentUpWhenRotationChanged);
 
     }
 
@@ -558,10 +565,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         longtitudeList = savedInstanceState.getDoubleArray("longtitudeList");
         currentPositionLongtitude = savedInstanceState.getDouble("currentPositionLongtitude");
         currentPositionLatitude = savedInstanceState.getDouble("currentPositionLatitude");
+        fragmentUpWhenRotationChanged = savedInstanceState.getBoolean("fragmentUpWhenRotationChanged");
     }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
         if (cameraPos != null) {
             mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPos));
@@ -576,15 +584,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             currentCameraLatitude = mMap.getCameraPosition().target.latitude;
             currentCameraLongtitude = mMap.getCameraPosition().target.longitude;
         }
->>>>>>> refs/remotes/origin/master
+        if (fragment != null && fragment.isVisible()){
+            fragment.dismiss();
+        }
 
     }
 
     public void onClickFragmentOk(View v){
-        fragment.dismiss();
+        fragmentUpWhenRotationChanged = false;
+        if (fragment != null){
+            fragment.dismiss();
+        }
     }
 
     public void onFragmentInteraction(Uri uri){}
+
+
 
 }
 
