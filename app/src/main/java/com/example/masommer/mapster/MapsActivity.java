@@ -191,6 +191,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+<<<<<<< HEAD
+=======
+    /*private void showResults(String query) {
+
+        Cursor cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
+=======
+=======
+>>>>>>> Martin
+>>>>>>> master
 /*    private void showResults(String query) {
 
         CursorLoader cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
@@ -203,6 +212,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     /*private void showResults(String query) {
 
         Cursor cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
+>>>>>>> master
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> Martin
+=======
+>>>>>>> Martin
 >>>>>>> master
                 new String[]{query}, null);
         if (cursor == null) {
