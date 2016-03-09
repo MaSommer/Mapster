@@ -1,12 +1,15 @@
 <resources>
     <string name="app_name">Mapster</string>
-    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_maps">Mapster</string>
     <string name="search_hint">Search building in room number</string>
+    <string name="lat_tag">LATITUDE</string>
+    <string name="long_tag">LONGITUDE</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="fragment_info_message">- Press \"search\" icon to search after rooms on campus (Eks.: "KERR1110").\n
         - Press \"eye\" icon to see the location of your self and the specified room you searched after.\n
         - Press \"walk\" icon to see the walking direction in red color to the specified room.\n
         - Press \"drive\" icon to see the driving direction in blue color to the specified room. \n</string>
+    <string name="result_header">Results</string>
 
 </resources>

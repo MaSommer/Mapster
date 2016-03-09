@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
@@ -36,13 +37,18 @@ import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupWindow;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.LocationListener;
@@ -184,18 +190,27 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     protected void onNewIntent(Intent intent) {
         handleIntent(intent);
+        //System.out.print("tried to search!");
     }
 
     private void handleIntent(Intent intent) {
 
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             // handles a click on a search suggestion; launches activity to show word
-            Toast.makeText(getApplicationContext(), "VOILA!", Toast.LENGTH_LONG).show();
+            //System.out.print("HEIIIII");
+            //String path = intent.getStringExtra(SearchManager.SUGGEST_COLUMN_INTENT_DATA_ID);
+            //Log.i("path", intent.getData().getPath());
+            Uri uri = intent.getData();
+            roomFromSuggestion(uri);
+
+//            Toast.makeText(getApplicationContext(), "VOILA!", Toast.LENGTH_LONG).show();
         } else if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             // handles a search query
             String query = intent.getStringExtra(SearchManager.QUERY);
             Bundle args = new Bundle();
+            Log.i("query", query);
             args.putString("QUERY", query);
+            getSupportLoaderManager().restartLoader(DATABASE_LOADER,args,this);
             getSupportLoaderManager().initLoader(DATABASE_LOADER, args, this);
 //            Cursor cursor = db.getWordMatches(query, null);
 //
@@ -211,7 +226,62 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             //showResults(query);
         }
     }
-    
+
+    private void roomFromSuggestion(Uri uri) {
+        Cursor c = managedQuery(uri, null, null, null, null);
+        c.moveToFirst();
+        int latIndex = c.getColumnIndexOrThrow(DatabaseTable.COL_LAT);
+        int longIndex = c.getColumnIndexOrThrow(DatabaseTable.COL_LONG);
+        double latitude = Double.parseDouble(c.getString(latIndex));
+        double longitude = Double.parseDouble(c.getString(longIndex));
+        LatLng roomPoint = new LatLng(latitude,longitude);
+        roomMarker.remove();
+        roomMarker = mMap.addMarker(new MarkerOptions().position(roomPoint));
+        zoomToRoom(roomMarker.getPosition());
+    }
+
+//    private void showResults(String query) {
+//
+//        Cursor cursor = new CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
+//                new String[]{query}, null);
+//        if (cursor == null) {
+//            // There are no results
+//            //mTextView.setText(getString(R.string.no_results, new Object[]{query}));
+//        } else {
+//            // Display the number of results
+//            int count = cursor.getCount();
+//            //String countString = getResources().getQuantityString(R.plurals.search_results,
+//            //        count, new Object[] {count, query});
+//            //mTextView.setText(countString);
+//            Toast.makeText(MapsActivity.this, "WOW: You found "+count+" results!", Toast.LENGTH_SHORT).show();
+//            // Specify the columns we want to display in the result
+////            String[] from = new String[] { DictionaryDatabase.KEY_WORD,
+////                    DictionaryDatabase.KEY_DEFINITION };
+////
+////            // Specify the corresponding layout elements where we want the columns to go
+////            int[] to = new int[] { R.id.word,
+////                    R.id.definition };
+////
+////            // Create a simple cursor adapter for the definitions and apply them to the ListView
+////            SimpleCursorAdapter words = new SimpleCursorAdapter(this,
+////                    R.layout.result, cursor, from, to);
+////            mListView.setAdapter(words);
+////
+////            // Define the on-click listener for the list items
+////            mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+////
+////                @Override
+////                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+////                    // Build the Intent used to open WordActivity with a specific word Uri
+////                    Intent wordIntent = new Intent(getApplicationContext(), WordActivity.class);
+////                    Uri data = Uri.withAppendedPath(DictionaryProvider.CONTENT_URI,
+////                            String.valueOf(id));
+////                    wordIntent.setData(data);
+////                    startActivity(wordIntent);
+////                }
+////            });
+//        }
+//    }
     /*private void showResults(String query) {
 
         Cursor cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
@@ -304,6 +374,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
         mMap = googleMap;
+        mMap.setBuildingsEnabled(false);
         mMap.setOnMapClickListener(this);
         //Add north hall to map
         BitmapFactory.Options options = new BitmapFactory.Options();
@@ -616,7 +687,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {}
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        Log.i("morro", data.getCount() + "");
+        SearchView sv = (SearchView)findViewById(R.id.action_search);
+        sv.clearFocus();
+        showPopup(data);
+    }
+
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
@@ -695,6 +772,56 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .zoom(19.9f)
                 .build();
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cp));
+    }
+
+    public void showPopup(Cursor cursor) {
+        View popupView = getLayoutInflater().inflate(R.layout.popup_layout, null);
+
+        final PopupWindow popupWindow = new PopupWindow(popupView,
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+
+        ListView lv = (ListView) popupView.findViewById(R.id.listView);
+
+        //add header
+        TextView list_title = new TextView(this);
+        list_title.setText(R.string.result_header);
+        list_title.setTextSize(20);
+        list_title.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        list_title.setTextColor(getResources().getColor(R.color.primaryText,getTheme()));
+        list_title.setBackgroundColor(getResources().getColor(R.color.colorPrimary,getTheme()));
+        lv.addHeaderView(list_title);
+
+        final PopupCursorAdapter pcAdapter = new PopupCursorAdapter(lv.getContext(), cursor);
+        lv.setAdapter(pcAdapter);
+
+        // If the PopupWindow should be focusable
+        popupWindow.setFocusable(true);
+
+        // If you need the PopupWindow to dismiss when when touched outside
+        popupWindow.setBackgroundDrawable(new ColorDrawable());
+
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                //LinearLayout lin = (LinearLayout) view;
+                //TODO fix layout, remove shortest path if existing
+                roomMarker.remove();
+                TextView tv = (TextView) view.findViewById(R.id.lvItem);
+                String building = "" + tv.getText();
+                String latitude = (String) tv.getTag(R.string.lat_tag);
+                String longitude = (String) tv.getTag(R.string.long_tag);
+                LatLng pos = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
+                roomMarker = mMap.addMarker(new MarkerOptions().position(pos).title(building));
+                zoomToRoom(pos);
+                popupWindow.dismiss();
+            }
+        });
+        popupWindow.showAtLocation(findViewById(R.id.map_layout),Gravity.CENTER,0,0);
+        //popupWindow.showAsDropDown(findViewById(R.id.action_search),0,20, Gravity.CENTER_HORIZONTAL);
+        /*
+        http://stackoverflow.com/questions/18461990/pop-up-window-to-display-some-stuff-in-a-fragment
+        https://guides.codepath.com/android/Populating-a-ListView-with-a-CursorAdapter#attaching-the-adapter-to-a-listview
+        */
     }
 
 
