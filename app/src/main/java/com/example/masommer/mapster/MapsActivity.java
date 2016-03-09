@@ -1,14 +1,17 @@
 package com.example.masommer.mapster;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
@@ -40,7 +43,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupWindow;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.LocationListener;
@@ -80,8 +86,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor>, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener {
 
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor>, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener, BlankFragment.OnFragmentInteractionListener {
 
     private GoogleMap mMap;
     private final int MY_PERMISSION_LOCATION_ACCESS = 1;
@@ -91,6 +97,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String provider;
     private Marker marker;
     private boolean landscape;
+    private Polyline newWalkingPolyline;
+    private Polyline newDrivingPolyline;
+    private Polyline newPolyline;
+    private BlankFragment fragment;
+    private android.support.v4.app.FragmentManager fragmentManager;
+    private android.support.v4.app.FragmentTransaction fragmentTransaction;
+    private ArrayList directionPoints;
+    private SharedPreferences prefs = null;
+
+
+    private String directionMode;
 
     private ListView listView;
     private ArrayList<Building> buildingList = new ArrayList<Building>();
@@ -110,13 +127,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private CameraPosition cameraPos;
 
+    private boolean fragmentUpWhenRotationChanged;
+
     private DatabaseTable db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        //db = new DatabaseTable(this);
+        if (savedInstanceState != null && savedInstanceState.getBoolean("fragmentUpWhenRotationChanged")){
+            fragment = new BlankFragment();
+            fragment.show(getFragmentManager(), "Diag");
+        }
+        db = new DatabaseTable(this);
         lm = (LocationManager) getSystemService(LOCATION_SERVICE);
         // Creating a criteria object to retrieve provider
         Criteria criteria = new Criteria();
@@ -139,8 +161,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     listItems);
             listView.setAdapter(adapter);
         }
-
-
+        fragmentManager = getSupportFragmentManager();
+        fragmentTransaction = fragmentManager.beginTransaction();
+        prefs = getSharedPreferences("com.mycompany.myAppName", MODE_PRIVATE);
 
     }
 
@@ -228,6 +251,68 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 ////            });
 //        }
 //    }
+    /*private void showResults(String query) {
+
+        Cursor cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
+=======
+=======
+>>>>>>> Martin
+/*    private void showResults(String query) {
+
+        CursorLoader cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
+=======
+    /*private void showResults(String query) {
+
+        Cursor cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
+>>>>>>> master
+=======
+    /*private void showResults(String query) {
+
+        Cursor cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
+>>>>>>> master
+<<<<<<< HEAD
+>>>>>>> Martin
+=======
+>>>>>>> Martin
+                new String[]{query}, null);
+        if (cursor == null) {
+            // There are no results
+            //mTextView.setText(getString(R.string.no_results, new Object[]{query}));
+        } else {
+            // Display the number of results
+            int count = cursor.getCount();
+            //String countString = getResources().getQuantityString(R.plurals.search_results,
+            //        count, new Object[] {count, query});
+            //mTextView.setText(countString);
+            Toast.makeText(MapsActivity.this, "WOW: You found "+count+" results!", Toast.LENGTH_SHORT).show();
+            // Specify the columns we want to display in the result
+//            String[] from = new String[] { DictionaryDatabase.KEY_WORD,
+//                    DictionaryDatabase.KEY_DEFINITION };
+//
+//            // Specify the corresponding layout elements where we want the columns to go
+//            int[] to = new int[] { R.id.word,
+//                    R.id.definition };
+//
+//            // Create a simple cursor adapter for the definitions and apply them to the ListView
+//            SimpleCursorAdapter words = new SimpleCursorAdapter(this,
+//                    R.layout.result, cursor, from, to);
+//            mListView.setAdapter(words);
+//
+//            // Define the on-click listener for the list items
+//            mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//
+//                @Override
+//                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                    // Build the Intent used to open WordActivity with a specific word Uri
+//                    Intent wordIntent = new Intent(getApplicationContext(), WordActivity.class);
+//                    Uri data = Uri.withAppendedPath(DictionaryProvider.CONTENT_URI,
+//                            String.valueOf(id));
+//                    wordIntent.setData(data);
+//                    startActivity(wordIntent);
+//                }
+//            });
+        }
+    }*/
 
     /**
      * Manipulates the map once available.
@@ -238,6 +323,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
      */
+
+
+
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         if (ContextCompat.checkSelfPermission(this,
@@ -313,18 +402,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Location location = mMap.getMyLocation();
             LatLng currentPos = new LatLng(currentPositionLatitude, currentPositionLongtitude);
             LatLng targetPos = new LatLng(roomMarker.getPosition().latitude, roomMarker.getPosition().longitude);
-            findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");            /*ArrayList<LatLng> directionPoints = new ArrayList<LatLng>();
-            for (int i = 0; i < directionPoints.size(); i++) {
-                LatLng point = new LatLng(latitudeList[i], longtitudeList[i]);
-                directionPoints.add(point);
-            }
-            Polyline newPolyline;
-            GoogleMap mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
-            PolylineOptions rectLine = new PolylineOptions().width(8).color(Color.RED);
-            for (int i = 0; i < directionPoints.size(); i++) {
-                rectLine.add((LatLng) directionPoints.get(i));
-            }
-            newPolyline = mMap.addPolyline(rectLine);*/
+            findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");
         }
         //marker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.415370973562936, -119.84701473265886)));
         //createBuildingList();
@@ -426,6 +504,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
     public void findDirections(double fromPositionDoubleLat, double fromPositionDoubleLong, double toPositionDoubleLat, double toPositionDoubleLong, String mode) {
+        this.directionMode = mode;
         Map<String, String> map = new HashMap<String, String>();
         map.put(GetDirectionsAsyncTask.USER_CURRENT_LAT, String.valueOf(fromPositionDoubleLat));
         map.put(GetDirectionsAsyncTask.USER_CURRENT_LONG, String.valueOf(fromPositionDoubleLong));
@@ -438,9 +517,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void handleGetDirectionsResult(ArrayList directionPoints) {
-        Polyline newPolyline;
-        GoogleMap mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
-        PolylineOptions rectLine = new PolylineOptions().width(8).color(Color.RED);
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
+        PolylineOptions rectLine;
+        if (directionMode.equals("walking")){
+            rectLine = new PolylineOptions().width(8).color(Color.RED);
+        }
+        else{
+            rectLine = new PolylineOptions().width(8).color(Color.BLUE);
+
+        }
         longtitudeList = new double[directionPoints.size()];
         latitudeList = new double[directionPoints.size()];
         for (int i = 0; i < directionPoints.size(); i++) {
@@ -449,15 +535,33 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             longtitudeList[i] = point.longitude;
             latitudeList[i] = point.latitude;
         }
-        newPolyline = mMap.addPolyline(rectLine);
+        if (directionMode.equals("walking")){
+            newWalkingPolyline = mMap.addPolyline(rectLine);
+        }
+        else{
+            newDrivingPolyline = mMap.addPolyline(rectLine);
+        }
+        Location myLocation = mMap.getMyLocation();
+        builder.include(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()));
+        if (directionPoints != null){
+            for (int i = 0; i < directionPoints.size(); i++) {
+                LatLng point = (LatLng) directionPoints.get(i);
+                builder.include(point);
+            }
+        }
+        builder.include(roomMarker.getPosition());
+        LatLngBounds bounds = builder.build();
+        int padding = 50; // offset from edges of the map in pixels
+        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+        mMap.animateCamera(cu);
     }
 
     public void onZoomToMarkersClick(MenuItem item) {
-        if (landscape){
+        /*if (landscape){
             listView.setVisibility(View.VISIBLE);
             listItems.add("NH1111 : ");
             adapter.notifyDataSetChanged();
-        }
+        }*/
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         if (roomMarker != null && ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
@@ -475,8 +579,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.animateCamera(cu);
     }
 
-    public void onDirectionClick(MenuItem item){
-        if (roomMarker != null && (ContextCompat.checkSelfPermission(this,
+    public void onDirectionWalkClick(MenuItem item){
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        if (newWalkingPolyline == null && roomMarker != null && (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED)){
             Location location = mMap.getMyLocation();
@@ -486,10 +591,43 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             currentPositionLatitude = currentPos.latitude;
             findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");
         }
+
+        else if (newWalkingPolyline != null){
+            newWalkingPolyline.remove();
+            newWalkingPolyline = null;
+        }
         else{
             return;
         }
 
+    }
+
+    public void onDirectionDriveClick(MenuItem item){
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        if (newDrivingPolyline == null && roomMarker != null && (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED)){
+            Location location = mMap.getMyLocation();
+            LatLng currentPos = new LatLng(location.getLatitude(), location.getLongitude());
+            LatLng targetPos = new LatLng(roomMarker.getPosition().latitude, roomMarker.getPosition().longitude);
+            currentPositionLongtitude = currentPos.longitude;
+            currentPositionLatitude = currentPos.latitude;
+            findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "driveing");
+        }
+        else if (newDrivingPolyline != null){
+            newDrivingPolyline.remove();
+            newDrivingPolyline = null;
+        }
+        else{
+            return;
+        }
+
+    }
+
+    public void onInfoClicked(MenuItem item){
+        fragmentUpWhenRotationChanged = true;
+        fragment = new BlankFragment();
+        fragment.show(getFragmentManager(), "Diag");
     }
 
     @Override
@@ -518,10 +656,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Toast.makeText(MapsActivity.this, "Results: "+data.getCount(), Toast.LENGTH_SHORT).show();
     }
 
+
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-
     }
+
+
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putDouble("roomMarkerLongtitude", roomMarkerLongtitude);
@@ -532,6 +672,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         outState.putDoubleArray("latitudeList", latitudeList);
         outState.putDouble("currentPositionLongtitude", currentPositionLongtitude);
         outState.putDouble("currentPositionLatitude", currentPositionLatitude);
+        outState.putBoolean("fragmentUpWhenRotationChanged", fragmentUpWhenRotationChanged);
 
     }
 
@@ -546,14 +687,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         longtitudeList = savedInstanceState.getDoubleArray("longtitudeList");
         currentPositionLongtitude = savedInstanceState.getDouble("currentPositionLongtitude");
         currentPositionLatitude = savedInstanceState.getDouble("currentPositionLatitude");
+        fragmentUpWhenRotationChanged = savedInstanceState.getBoolean("fragmentUpWhenRotationChanged");
     }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
         if (cameraPos != null) {
             mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPos));
             cameraPos = null;
+        }
+        if (prefs.getBoolean("firstrun", true)) {
+            // Do first run stuff here then set 'firstrun' as false
+            // using the following line to edit/commit prefs
+            fragment = new BlankFragment();
+            fragment.show(getFragmentManager(), "Diag");
+            prefs.edit().putBoolean("firstrun", false).commit();
         }
     }
 
@@ -564,7 +713,66 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             currentCameraLatitude = mMap.getCameraPosition().target.latitude;
             currentCameraLongtitude = mMap.getCameraPosition().target.longitude;
         }
+        if (fragment != null && fragment.isVisible()){
+            fragment.dismiss();
+        }
 
     }
+
+    public void onClickFragmentOk(View v){
+        fragmentUpWhenRotationChanged = false;
+        if (fragment != null){
+            fragment.dismiss();
+        }
+    }
+
+    public void onFragmentInteraction(Uri uri){}
+
+    public void zoomToRoom(LatLng latLng) {
+        CameraPosition cp = new CameraPosition.Builder()
+                .target(latLng)
+                .zoom(19.9f)
+                .build();
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cp));
+    }
+
+    public void showPopup(Cursor cursor) {
+        View popupView = getLayoutInflater().inflate(R.layout.popup_layout, null);
+
+        final PopupWindow popupWindow = new PopupWindow(popupView,
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+
+        // Example: If you have a ListView inside `popup_layout.xml`
+        ListView lv = (ListView) popupView.findViewById(R.id.listView);
+
+        PopupCursorAdapter pcAdapter = new PopupCursorAdapter(this, cursor);
+        lv.setAdapter(pcAdapter);
+
+        // If the PopupWindow should be focusable
+        popupWindow.setFocusable(true);
+
+        // If you need the PopupWindow to dismiss when when touched outside
+        popupWindow.setBackgroundDrawable(new ColorDrawable());
+
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                TextView tv = (TextView) view;
+                String building = "" + tv.getText();
+                String latitude = (String) tv.getTag(1);
+                String longitude = (String) tv.getTag(2);
+                LatLng pos = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
+                mMap.addMarker(new MarkerOptions().position(pos).title(building));
+                zoomToRoom(pos);
+                popupWindow.dismiss();
+            }
+        });
+        /*
+        http://stackoverflow.com/questions/18461990/pop-up-window-to-display-some-stuff-in-a-fragment
+        https://guides.codepath.com/android/Populating-a-ListView-with-a-CursorAdapter#attaching-the-adapter-to-a-listview
+        */
+    }
+
+
 }
 

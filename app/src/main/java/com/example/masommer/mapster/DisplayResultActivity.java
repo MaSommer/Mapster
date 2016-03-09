@@ -14,7 +14,7 @@ public class DisplayResultActivity extends AppCompatActivity {
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_display_result);
+        setContentView(R.layout.popup_layout);
         ListView listView = (ListView) findViewById(R.id.listView);
 
         Intent intent = getIntent();
