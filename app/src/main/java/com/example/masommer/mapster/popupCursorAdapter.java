@@ -11,7 +11,10 @@ import android.widget.TextView;
 /**
  * Created by agmal_000 on 08.03.2016.
  */
-public class PopupCursorAdapter extends CursorAdapter {
+class PopupCursorAdapter extends CursorAdapter {
+
+    private static final int LAT_TAG = 1;
+    private static final int LONG_TAG = 2;
     public PopupCursorAdapter(Context context, Cursor c) {
         super(context, c);
     }
@@ -26,7 +29,7 @@ public class PopupCursorAdapter extends CursorAdapter {
         TextView textView = (TextView) view.findViewById(R.id.lvItem);
         String item = cursor.getString(cursor.getColumnIndexOrThrow("suggest_text_1"));
         textView.setText(item);
-        textView.setTag(1, cursor.getString(cursor.getColumnIndexOrThrow("LATITUDE")));
-        textView.setTag(2, cursor.getString(cursor.getColumnIndexOrThrow("LONGITUDE")));
+        textView.setTag(R.string.lat_tag, cursor.getString(cursor.getColumnIndexOrThrow("LATITUDE")));
+        textView.setTag(R.string.long_tag, cursor.getString(cursor.getColumnIndexOrThrow("LONGITUDE")));
     }
 }
