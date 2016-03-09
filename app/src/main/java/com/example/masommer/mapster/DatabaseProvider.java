@@ -130,7 +130,9 @@ public class DatabaseProvider extends ContentProvider {
         query = query.toLowerCase();
         String[] columns = new String[] {
                 BaseColumns._ID,
-                DatabaseTable.COL_ROOM};
+                DatabaseTable.COL_ROOM,
+                DatabaseTable.COL_LONG,
+                DatabaseTable.COL_LAT};
 //                DictionaryDatabase.KEY_DEFINITION};
 
         return mDatabase.getWordMatches(query, columns);
