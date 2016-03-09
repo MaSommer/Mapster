@@ -37,7 +37,9 @@ import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -192,7 +194,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             // handles a search query
             String query = intent.getStringExtra(SearchManager.QUERY);
             Bundle args = new Bundle();
+            Log.i("query", query);
             args.putString("QUERY", query);
+            getSupportLoaderManager().restartLoader(DATABASE_LOADER,args,this);
             getSupportLoaderManager().initLoader(DATABASE_LOADER, args, this);
 //            Cursor cursor = db.getWordMatches(query, null);
 //
@@ -652,8 +656,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        System.out.print(data.getCount());
-        Toast.makeText(MapsActivity.this, "Results: "+data.getCount(), Toast.LENGTH_SHORT).show();
+        Log.i("morro", data.getCount() + "");
+        SearchView sv = (SearchView)findViewById(R.id.action_search);
+        sv.clearFocus();
+        showPopup(data);
     }
 
 
@@ -744,7 +750,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         ListView lv = (ListView) popupView.findViewById(R.id.listView);
 
-        PopupCursorAdapter pcAdapter = new PopupCursorAdapter(this, cursor);
+        final PopupCursorAdapter pcAdapter = new PopupCursorAdapter(lv.getContext(), cursor);
         lv.setAdapter(pcAdapter);
 
         // If the PopupWindow should be focusable
@@ -756,16 +762,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                TextView tv = (TextView) view;
+                //LinearLayout lin = (LinearLayout) view;
+                //TODO fix layout, remove shortest path if existing
+                roomMarker.remove();
+                TextView tv = (TextView)view.findViewById(R.id.lvItem);
                 String building = "" + tv.getText();
-                String latitude = (String) tv.getTag(1);
-                String longitude = (String) tv.getTag(2);
+                String latitude = (String) tv.getTag(R.string.lat_tag);
+                String longitude = (String) tv.getTag(R.string.long_tag);
                 LatLng pos = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
-                mMap.addMarker(new MarkerOptions().position(pos).title(building));
+                roomMarker = mMap.addMarker(new MarkerOptions().position(pos).title(building));
                 zoomToRoom(pos);
                 popupWindow.dismiss();
             }
         });
+        popupWindow.showAsDropDown(findViewById(R.id.action_search),0,20, Gravity.CENTER_HORIZONTAL);
         /*
         http://stackoverflow.com/questions/18461990/pop-up-window-to-display-some-stuff-in-a-fragment
         https://guides.codepath.com/android/Populating-a-ListView-with-a-CursorAdapter#attaching-the-adapter-to-a-listview
