@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
@@ -42,7 +43,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupWindow;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.LocationListener;
@@ -672,6 +676,43 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .zoom(19.9f)
                 .build();
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cp));
+    }
+
+    public void showPopup(Cursor cursor) {
+        View popupView = getLayoutInflater().inflate(R.layout.popup_layout, null);
+
+        final PopupWindow popupWindow = new PopupWindow(popupView,
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+
+        // Example: If you have a ListView inside `popup_layout.xml`
+        ListView lv = (ListView) popupView.findViewById(R.id.listView);
+
+        popupCursorAdapter pcAdapter = new popupCursorAdapter(this, cursor);
+        lv.setAdapter(pcAdapter);
+
+        // If the PopupWindow should be focusable
+        popupWindow.setFocusable(true);
+
+        // If you need the PopupWindow to dismiss when when touched outside
+        popupWindow.setBackgroundDrawable(new ColorDrawable());
+
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                TextView tv = (TextView) view;
+                String building = "" + tv.getText();
+                String latitude = (String) tv.getTag(1);
+                String longitude = (String) tv.getTag(2);
+                LatLng pos = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
+                mMap.addMarker(new MarkerOptions().position(pos).title(building));
+                zoomToRoom(pos);
+                popupWindow.dismiss();
+            }
+        });
+        /*
+        http://stackoverflow.com/questions/18461990/pop-up-window-to-display-some-stuff-in-a-fragment
+        https://guides.codepath.com/android/Populating-a-ListView-with-a-CursorAdapter#attaching-the-adapter-to-a-listview
+        */
     }
 
 
