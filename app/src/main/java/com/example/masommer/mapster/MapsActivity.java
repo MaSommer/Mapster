@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -96,12 +97,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String provider;
     private Marker marker;
     private boolean landscape;
+    private Polyline newWalkingPolyline;
+    private Polyline newDrivingPolyline;
     private Polyline newPolyline;
     private BlankFragment fragment;
     private android.support.v4.app.FragmentManager fragmentManager;
     private android.support.v4.app.FragmentTransaction fragmentTransaction;
+    private ArrayList directionPoints;
+    private SharedPreferences prefs = null;
 
 
+    private String directionMode;
 
     private ListView listView;
     private ArrayList<Building> buildingList = new ArrayList<Building>();
@@ -133,12 +139,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             fragment.show(getFragmentManager(), "Diag");
         }
         db = new DatabaseTable(this);
-        //db = new DatabaseTable(this);
-        if (savedInstanceState != null && savedInstanceState.getBoolean("fragmentUpWhenRotationChanged")){
-            fragment = new BlankFragment();
-            fragment.show(getFragmentManager(), "Diag");
-        }
-        db = new DatabaseTable(this);
         lm = (LocationManager) getSystemService(LOCATION_SERVICE);
         // Creating a criteria object to retrieve provider
         Criteria criteria = new Criteria();
@@ -163,6 +163,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         fragmentManager = getSupportFragmentManager();
         fragmentTransaction = fragmentManager.beginTransaction();
+        prefs = getSharedPreferences("com.mycompany.myAppName", MODE_PRIVATE);
+
     }
 
     protected void onNewIntent(Intent intent) {
@@ -448,6 +450,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
     public void findDirections(double fromPositionDoubleLat, double fromPositionDoubleLong, double toPositionDoubleLat, double toPositionDoubleLong, String mode) {
+        this.directionMode = mode;
         Map<String, String> map = new HashMap<String, String>();
         map.put(GetDirectionsAsyncTask.USER_CURRENT_LAT, String.valueOf(fromPositionDoubleLat));
         map.put(GetDirectionsAsyncTask.USER_CURRENT_LONG, String.valueOf(fromPositionDoubleLong));
@@ -460,7 +463,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void handleGetDirectionsResult(ArrayList directionPoints) {
-        PolylineOptions rectLine = new PolylineOptions().width(8).color(Color.RED);
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
+        PolylineOptions rectLine;
+        if (directionMode.equals("walking")){
+            rectLine = new PolylineOptions().width(8).color(Color.RED);
+        }
+        else{
+            rectLine = new PolylineOptions().width(8).color(Color.BLUE);
+
+        }
         longtitudeList = new double[directionPoints.size()];
         latitudeList = new double[directionPoints.size()];
         for (int i = 0; i < directionPoints.size(); i++) {
@@ -469,7 +481,25 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             longtitudeList[i] = point.longitude;
             latitudeList[i] = point.latitude;
         }
-        newPolyline = mMap.addPolyline(rectLine);
+        if (directionMode.equals("walking")){
+            newWalkingPolyline = mMap.addPolyline(rectLine);
+        }
+        else{
+            newDrivingPolyline = mMap.addPolyline(rectLine);
+        }
+        Location myLocation = mMap.getMyLocation();
+        builder.include(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()));
+        if (directionPoints != null){
+            for (int i = 0; i < directionPoints.size(); i++) {
+                LatLng point = (LatLng) directionPoints.get(i);
+                builder.include(point);
+            }
+        }
+        builder.include(roomMarker.getPosition());
+        LatLngBounds bounds = builder.build();
+        int padding = 50; // offset from edges of the map in pixels
+        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+        mMap.animateCamera(cu);
     }
 
     public void onZoomToMarkersClick(MenuItem item) {
@@ -496,7 +526,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void onDirectionWalkClick(MenuItem item){
-        if (newPolyline == null && roomMarker != null && (ContextCompat.checkSelfPermission(this,
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        if (newWalkingPolyline == null && roomMarker != null && (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED)){
             Location location = mMap.getMyLocation();
@@ -506,9 +537,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             currentPositionLatitude = currentPos.latitude;
             findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");
         }
-        else if (newPolyline != null){
-            newPolyline.remove();
-            newPolyline = null;
+
+        else if (newWalkingPolyline != null){
+            newWalkingPolyline.remove();
+            newWalkingPolyline = null;
         }
         else{
             return;
@@ -517,7 +549,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void onDirectionDriveClick(MenuItem item){
-        if (newPolyline == null && roomMarker != null && (ContextCompat.checkSelfPermission(this,
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        if (newDrivingPolyline == null && roomMarker != null && (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED)){
             Location location = mMap.getMyLocation();
@@ -527,13 +560,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             currentPositionLatitude = currentPos.latitude;
             findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "driveing");
         }
-        else if (newPolyline != null){
-            newPolyline.remove();
-            newPolyline = null;
+        else if (newDrivingPolyline != null){
+            newDrivingPolyline.remove();
+            newDrivingPolyline = null;
         }
         else{
             return;
         }
+
     }
 
     public void onInfoClicked(MenuItem item){
@@ -605,6 +639,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPos));
             cameraPos = null;
         }
+        if (prefs.getBoolean("firstrun", true)) {
+            // Do first run stuff here then set 'firstrun' as false
+            // using the following line to edit/commit prefs
+            fragment = new BlankFragment();
+            fragment.show(getFragmentManager(), "Diag");
+            prefs.edit().putBoolean("firstrun", false).commit();
+        }
     }
 
     @Override
@@ -673,7 +714,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         https://guides.codepath.com/android/Populating-a-ListView-with-a-CursorAdapter#attaching-the-adapter-to-a-listview
         */
     }
-
 
 
 }
