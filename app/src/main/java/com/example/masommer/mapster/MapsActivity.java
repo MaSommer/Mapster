@@ -124,7 +124,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        if (savedInstanceState != null && savedInstanceState.getBoolean("fragmentUpWhenRotationChanged")){
+            fragment = new BlankFragment();
+            fragment.show(getFragmentManager(), "Diag");
+        }
+        db = new DatabaseTable(this);
         //db = new DatabaseTable(this);
         if (savedInstanceState != null && savedInstanceState.getBoolean("fragmentUpWhenRotationChanged")){
             fragment = new BlankFragment();
@@ -190,6 +194,26 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     /*private void showResults(String query) {
 
         Cursor cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
+=======
+=======
+>>>>>>> Martin
+/*    private void showResults(String query) {
+
+        CursorLoader cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
+=======
+    /*private void showResults(String query) {
+
+        Cursor cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
+>>>>>>> master
+=======
+    /*private void showResults(String query) {
+
+        Cursor cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
+>>>>>>> master
+<<<<<<< HEAD
+>>>>>>> Martin
+=======
+>>>>>>> Martin
                 new String[]{query}, null);
         if (cursor == null) {
             // There are no results
@@ -514,6 +538,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         fragment.show(getFragmentManager(), "Diag");
     }
 
+    @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         String[] qry = {args.getString("QUERY")};
         switch (id) {
@@ -539,7 +564,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {}
 
-    @Override
+
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putDouble("roomMarkerLongtitude", roomMarkerLongtitude);
