@@ -230,13 +230,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void roomFromSuggestion(Uri uri) {
         Cursor c = managedQuery(uri, null, null, null, null);
         c.moveToFirst();
+        int idIndex = c.getColumnIndexOrThrow(DatabaseTable.COL_ROOM);
         int latIndex = c.getColumnIndexOrThrow(DatabaseTable.COL_LAT);
         int longIndex = c.getColumnIndexOrThrow(DatabaseTable.COL_LONG);
         double latitude = Double.parseDouble(c.getString(latIndex));
         double longitude = Double.parseDouble(c.getString(longIndex));
+        String title = c.getString(idIndex);
         LatLng roomPoint = new LatLng(latitude,longitude);
         roomMarker.remove();
         roomMarker = mMap.addMarker(new MarkerOptions().position(roomPoint));
+        roomMarker.setTitle(title);
         zoomToRoom(roomMarker.getPosition());
     }
 
