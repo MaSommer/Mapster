@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/back"
+        android:orderInCategory="200"
+        android:title="Back"
+        android:icon="@drawable/ic_arrow_back"
+        app:showAsAction="always"
+        android:onClick="onArrowBackClicked"/>
+
+    <item
+        android:id="@+id/delete"
+        android:orderInCategory="100"
+        android:title="Favourites"
+        android:icon="@drawable/ic_trash"
+        app:showAsAction="always"
+        android:onClick="onDeleteClicked"/>
+
+
+
+</menu>

@@ -30,21 +30,32 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SimpleCursorAdapter;
+import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 
+
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.CameraUpdate;
@@ -66,13 +77,18 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -83,7 +99,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor>, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener, BlankFragment.OnFragmentInteractionListener {
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor>, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener, BlankFragment.OnFragmentInteractionListener, GoogleMap.OnMarkerClickListener {
 
     private GoogleMap mMap;
     private final int MY_PERMISSION_LOCATION_ACCESS = 1;
@@ -97,18 +113,28 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Polyline newDrivingPolyline;
     private Polyline newPolyline;
     private BlankFragment fragment;
-    private android.support.v4.app.FragmentManager fragmentManager;
-    private android.support.v4.app.FragmentTransaction fragmentTransaction;
+    private FragmentManager fragmentManager;
+    private FragmentTransaction fragmentTransaction;
     private ArrayList directionPoints;
     private SharedPreferences prefs = null;
 
+    private final int EDIT_MODE = 0;
+    private final int NORMAL_MODE = 1;
+
+    private int mode;
+
+    private HashMap<String, LatLng> favourites;
+    private ArrayList<Marker> favouritesMarkersList;
 
     private String directionMode;
+    private int favNr;
+
+    private boolean onMarkerClickRemove;
 
     private ListView listView;
     private ArrayList<Building> buildingList = new ArrayList<Building>();
     private ArrayList<LatLng> markerPoints = new ArrayList<LatLng>();
-    private ArrayList<String> listItems=new ArrayList<String>();
+    private ArrayList<String> listItems = new ArrayList<String>();
     private ArrayAdapter<String> adapter;
 
     private double currentCameraLongtitude;
@@ -127,12 +153,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private DatabaseTable db;
     private android.location.LocationListener locationListener;
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
+    private Toolbar editToolbar;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (savedInstanceState != null && savedInstanceState.getBoolean("fragmentUpWhenRotationChanged")){
+        if (savedInstanceState != null && savedInstanceState.getBoolean("fragmentUpWhenRotationChanged")) {
             fragment = new BlankFragment();
             fragment.show(getFragmentManager(), "Diag");
         }
@@ -154,31 +186,52 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             listView = (ListView) findViewById(R.id.sampleListView);
             listView.setVisibility(View.GONE);
 
-            adapter=new ArrayAdapter<String>(this,
+            adapter = new ArrayAdapter<String>(this,
                     android.R.layout.simple_list_item_1,
                     listItems);
             listView.setAdapter(adapter);
         }
         locationListener = new android.location.LocationListener() {
             @Override
-            public void onLocationChanged(Location location) {}
+            public void onLocationChanged(Location location) {
+            }
+
             @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {}
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+            }
+
             @Override
-            public void onProviderEnabled(String provider) {}
+            public void onProviderEnabled(String provider) {
+            }
+
             @Override
-            public void onProviderDisabled(String provider) {}
+            public void onProviderDisabled(String provider) {
+            }
         };
-        try{
+        try {
             lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 4, locationListener);
 
-        }
-        catch (SecurityException sec){
+        } catch (SecurityException sec) {
             sec.printStackTrace();
         }
         fragmentManager = getSupportFragmentManager();
         fragmentTransaction = fragmentManager.beginTransaction();
         prefs = getSharedPreferences("com.mycompany.myAppName", MODE_PRIVATE);
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+        onMarkerClickRemove = false;
+        Log.i("i am her", "looser");
+        loadFavourites();
+        mode = NORMAL_MODE;
+        editToolbar = (Toolbar) findViewById(R.id.toolbar);
+        editToolbar.setVisibility(View.GONE);
+        editToolbar.setTitleTextColor(Color.WHITE);
+        editToolbar.setTitle("Edit favourites");
+        editToolbar.inflateMenu(R.menu.edit_favourites);
+
+
 
     }
 
@@ -290,8 +343,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      */
 
 
-
-
     @Override
     public void onMapReady(GoogleMap googleMap) {
         if (ContextCompat.checkSelfPermission(this,
@@ -338,7 +389,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         LatLng southHallPos = new LatLng(34.41369886374294, -119.84712543206453);
         GroundOverlayOptions sh_newark = new GroundOverlayOptions()
                 .image(sh_bs)
-                .position(southHallPos,133f, 143f);
+                .position(southHallPos, 133f, 143f);
         mMap.addGroundOverlay(sh_newark);
 
         //Zoom in to UCSB campus
@@ -347,7 +398,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .zoom(16)
                 .build();
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cp));
-
+        mMap.setOnMarkerClickListener(this);
         //for testing
         roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.41447398728048, -119.8470713943243)));
 
@@ -358,12 +409,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         } catch (SecurityException e) {
             e.printStackTrace();
         }
-        if (currentCameraLongtitude != 0.0){
+        if (currentCameraLongtitude != 0.0) {
             LatLng cameraPosition = new LatLng(currentCameraLatitude, currentCameraLongtitude);
             mMap.moveCamera(CameraUpdateFactory.newLatLng(cameraPosition));
         }
         //roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.415370973562936, -119.84701473265886)));
-        if (latitudeList != null){
+        if (latitudeList != null) {
             Location location = mMap.getMyLocation();
             LatLng currentPos = new LatLng(currentPositionLatitude, currentPositionLongtitude);
             LatLng targetPos = new LatLng(roomMarker.getPosition().latitude, roomMarker.getPosition().longitude);
@@ -384,8 +435,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         markerPoints.add(var1);
         //marker = mMap.addMarker(new MarkerOptions().position(var1));
         String s = "";
-        for (LatLng latLng: markerPoints) {
-            s+=latLng.latitude + " " + latLng.longitude + "\n";
+        for (LatLng latLng : markerPoints) {
+            s += latLng.latitude + " " + latLng.longitude + "\n";
         }
         Log.i("string", s);
     }
@@ -393,9 +444,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_search, menu);
-
+        //getMenuInflater().inflate(R.menu.edit_favourites, menu);
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        android.support.v7.widget.SearchView searchView = (android.support.v7.widget.SearchView) menu.findItem(R.id.action_search).getActionView();
+        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         searchView.setSubmitButtonEnabled(true);
 
@@ -485,10 +536,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
         PolylineOptions rectLine;
-        if (directionMode.equals("walking")){
+        if (directionMode.equals("walking")) {
             rectLine = new PolylineOptions().width(8).color(Color.RED);
-        }
-        else{
+        } else {
             rectLine = new PolylineOptions().width(8).color(Color.BLUE);
 
         }
@@ -500,15 +550,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             longtitudeList[i] = point.longitude;
             latitudeList[i] = point.latitude;
         }
-        if (directionMode.equals("walking")){
+        if (directionMode.equals("walking")) {
             newWalkingPolyline = mMap.addPolyline(rectLine);
-        }
-        else{
+        } else {
             newDrivingPolyline = mMap.addPolyline(rectLine);
         }
         Location myLocation = mMap.getMyLocation();
         builder.include(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()));
-        if (directionPoints != null){
+        if (directionPoints != null) {
             for (int i = 0; i < directionPoints.size(); i++) {
                 LatLng point = (LatLng) directionPoints.get(i);
                 builder.include(point);
@@ -544,56 +593,60 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.animateCamera(cu);
     }
 
-    public void onDirectionWalkClick(MenuItem item){
+    public void onDirectionWalkClick(MenuItem item) {
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         if (newWalkingPolyline == null && roomMarker != null && (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED)){
+                == PackageManager.PERMISSION_GRANTED)) {
             Location location = mMap.getMyLocation();
             LatLng currentPos = new LatLng(location.getLatitude(), location.getLongitude());
             LatLng targetPos = new LatLng(roomMarker.getPosition().latitude, roomMarker.getPosition().longitude);
             currentPositionLongtitude = currentPos.longitude;
             currentPositionLatitude = currentPos.latitude;
             findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");
-        }
-
-        else if (newWalkingPolyline != null){
+        } else if (newWalkingPolyline != null) {
             newWalkingPolyline.remove();
             newWalkingPolyline = null;
-        }
-        else{
+        } else {
             return;
         }
 
     }
 
-    public void onDirectionDriveClick(MenuItem item){
+    public void onDirectionDriveClick(MenuItem item) {
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         if (newDrivingPolyline == null && roomMarker != null && (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED)){
+                == PackageManager.PERMISSION_GRANTED)) {
             Location location = mMap.getMyLocation();
             LatLng currentPos = new LatLng(location.getLatitude(), location.getLongitude());
             LatLng targetPos = new LatLng(roomMarker.getPosition().latitude, roomMarker.getPosition().longitude);
             currentPositionLongtitude = currentPos.longitude;
             currentPositionLatitude = currentPos.latitude;
             findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "driveing");
-        }
-        else if (newDrivingPolyline != null){
+        } else if (newDrivingPolyline != null) {
             newDrivingPolyline.remove();
             newDrivingPolyline = null;
-        }
-        else{
+        } else {
             return;
         }
 
     }
 
-    public void onInfoClicked(MenuItem item){
+    public void onInfoClicked(MenuItem item) {
         fragmentUpWhenRotationChanged = true;
         fragment = new BlankFragment();
         fragment.show(getFragmentManager(), "Diag");
     }
+
+    public void onFavouritesClicked(MenuItem item) {
+        View menuItemView = findViewById(R.id.favourites);
+        PopupMenu popup = new PopupMenu(this, menuItemView);
+        MenuInflater inflate = popup.getMenuInflater();
+        inflate.inflate(R.menu.popup, popup.getMenu());
+        popup.show();
+    }
+
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -616,7 +669,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {}
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+    }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
@@ -668,26 +722,27 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onPause(){
+    public void onPause() {
         super.onPause();
-        if (mMap != null){
+        if (mMap != null) {
             currentCameraLatitude = mMap.getCameraPosition().target.latitude;
             currentCameraLongtitude = mMap.getCameraPosition().target.longitude;
         }
-        if (fragment != null && fragment.isVisible()){
+        if (fragment != null && fragment.isVisible()) {
             fragment.dismiss();
         }
 
     }
 
-    public void onClickFragmentOk(View v){
+    public void onClickFragmentOk(View v) {
         fragmentUpWhenRotationChanged = false;
-        if (fragment != null){
+        if (fragment != null) {
             fragment.dismiss();
         }
     }
 
-    public void onFragmentInteraction(Uri uri){}
+    public void onFragmentInteraction(Uri uri) {
+    }
 
     public void zoomToRoom(LatLng latLng) {
         CameraPosition cp = new CameraPosition.Builder()
@@ -698,7 +753,222 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
+    @Override
+    public void onStart() {
+        super.onStart();
 
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.connect();
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Maps Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app deep link URI is correct.
+                Uri.parse("android-app://com.example.masommer.mapster/http/host/path")
+        );
+        AppIndex.AppIndexApi.start(client, viewAction);
+    }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Maps Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app deep link URI is correct.
+                Uri.parse("android-app://com.example.masommer.mapster/http/host/path")
+        );
+        AppIndex.AppIndexApi.end(client, viewAction);
+        client.disconnect();
+    }
+
+    public void onAddFavouriteClicked(MenuItem item){
+        onMarkerClickRemove = false;
+        favouritesMarkersList = new ArrayList<Marker>();
+        if (!favourites.containsKey(roomMarker.getId())) {
+            if (roomMarker != null) {
+                favourites.put(roomMarker.getId(), roomMarker.getPosition());
+                saveToFavourites(roomMarker);
+                String data = roomMarker.getId() + " is added to favourites";
+                Toast.makeText(this, data,
+                        Toast.LENGTH_LONG).show();
+            }
+        }
+        else{
+            String data = "Your favourites already consist of the room "+roomMarker.getId();
+            Toast.makeText(this, data,
+                    Toast.LENGTH_LONG).show();
+        }
+        Log.i("favs", ""+favourites);
+    }
+
+    public void onShowFavouritesClicked(MenuItem item){
+        favouritesMarkersList = new ArrayList<Marker>();
+        if (favourites.isEmpty()){
+            String data = "No favourites to show";
+            Toast.makeText(this, data,
+                    Toast.LENGTH_LONG).show();
+        }
+        else{
+            Iterator it = favourites.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry pair = (Map.Entry)it.next();
+                Marker marker = mMap.addMarker(new MarkerOptions().position((LatLng) pair.getValue()).title((String) pair.getKey()));
+                favouritesMarkersList.add(marker);
+            }
+        }
+    }
+
+    public void onHideFavouritesClicked(MenuItem item){
+        if (favouritesMarkersList.isEmpty()){
+            //No favourites to hide
+        }
+        else{
+            for (Marker marker:favouritesMarkersList) {
+                marker.remove();
+            }
+        }
+    }
+
+    public void onEditFavouriteClicked(MenuItem item){
+        Log.i("favs on edit", ""+favourites);
+        favouritesMarkersList = new ArrayList<Marker>();
+        mode = EDIT_MODE;
+        editToolbar.setVisibility(View.VISIBLE);
+        Iterator it = favourites.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            Marker marker = mMap.addMarker(new MarkerOptions().position((LatLng) pair.getValue()).title((String) pair.getKey()));
+            Log.i("pair", "key: " +pair.getKey().toString() + " value: " + pair.getValue().toString());
+            Log.i("marker", ""+marker);
+            favouritesMarkersList.add(marker);
+        }
+        String data = "Choose marker to edit or press add button to add room to favourites";
+        Toast.makeText(this, data, Toast.LENGTH_LONG).show();
+    }
+
+    public void onArrowBackClicked(MenuItem item){
+        editToolbar.setVisibility(View.GONE);
+        onMarkerClickRemove = false;
+        mode = NORMAL_MODE;
+    }
+
+    public void onDeleteClicked(MenuItem item){
+        Log.i("favs delte", ""+favourites);
+
+        onMarkerClickRemove = true;
+        String data = "Click on the marker you want to remove";
+        Toast.makeText(this, data, Toast.LENGTH_LONG).show();
+    }
+
+    public void loadFavourites(){
+        Context context = this.getApplicationContext();
+        favourites = new HashMap<String, LatLng>();
+        String filename = "favourites";
+        try{
+            FileInputStream fis = context.openFileInput(filename);
+            InputStreamReader isr = new InputStreamReader(fis);
+            BufferedReader bufferedReader = new BufferedReader(isr);
+            StringBuilder sb = new StringBuilder();
+            String line;
+            try{
+                while ((line = bufferedReader.readLine()) != null) {
+                    String[] roomInfo = line.split(" ");
+                    String roomName = roomInfo[0];
+                    double latitude = Double.parseDouble(roomInfo[1]);
+                    double longtitude = Double.parseDouble(roomInfo[2]);
+                    LatLng latLng = new LatLng(latitude, longtitude);
+                    favourites.put(roomName, latLng);
+                }
+            }
+            catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+        catch (FileNotFoundException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void saveToFavourites(Marker roomMarker){
+        Context context = this.getApplicationContext();
+        String filename = "favourites.txt";
+        String content = roomMarker.getId() + " " + roomMarker.getPosition().latitude + " "
+                + roomMarker.getPosition().longitude + System.getProperty("line.separator");
+        File file = new File(context.getFilesDir(), filename);
+        FileOutputStream outputStream;
+        try {
+            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+            outputStream.write(content.getBytes());
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void removeMarkerFromMemory(Marker marker){
+        File inputFile = new File("favourites.txt");
+        File tempFile = new File("myTempFile.txt");
+        boolean successful = false;
+        try{
+            BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
+
+            String lineToRemove = "bbb";
+            String currentLine;
+
+            while((currentLine = reader.readLine()) != null) {
+                // trim newline when comparing with lineToRemove
+                String trimmedLine = currentLine.trim();
+                if(trimmedLine.equals(lineToRemove)) continue;
+                writer.write(currentLine + System.getProperty("line.separator"));
+            }
+            writer.close();
+            reader.close();
+            successful = tempFile.renameTo(inputFile);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        if (successful){
+            String data = "Marker successfully removed from memory";
+            Toast.makeText(this, data,
+                    Toast.LENGTH_LONG).show();
+        }
+        else{
+            String data = "Marker failed to remove from memory";
+            Toast.makeText(this, data,
+                    Toast.LENGTH_LONG).show();
+        }
+
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        if (onMarkerClickRemove && mode == EDIT_MODE){
+            onMarkerClickRemove = false;
+            Log.i("favs", ""+favourites);
+            Log.i("pussy", "sniff");
+            marker.remove();
+            favourites.remove(marker.getId());
+            favouritesMarkersList.remove(marker);
+            removeMarkerFromMemory(marker);
+        }
+        else if (!onMarkerClickRemove && mode == EDIT_MODE){
+
+        }
+        return false;
+    }
 }
 
