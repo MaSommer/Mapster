@@ -84,8 +84,6 @@ import java.util.Map;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor>, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener, BlankFragment.OnFragmentInteractionListener {
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor>, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener, BlankFragment.OnFragmentInteractionListener {
-
     private GoogleMap mMap;
     private final int MY_PERMISSION_LOCATION_ACCESS = 1;
     private final int DATABASE_LOADER = 0;
@@ -193,7 +191,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-<<<<<<< HEAD
 /*    private void showResults(String query) {
 
         CursorLoader cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
@@ -531,10 +528,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         fragment.show(getFragmentManager(), "Diag");
     }
 
-<<<<<<< HEAD
     @Override
-=======
->>>>>>> master
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         String[] qry = {args.getString("QUERY")};
         switch (id) {
