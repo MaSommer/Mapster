@@ -484,7 +484,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-<<<<<<< HEAD
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         String[] qry = {args.getString("QUERY")};
         switch (id) {
@@ -511,7 +510,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-=======
+
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putDouble("roomMarkerLongtitude", roomMarkerLongtitude);
@@ -554,8 +553,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             currentCameraLatitude = mMap.getCameraPosition().target.latitude;
             currentCameraLongtitude = mMap.getCameraPosition().target.longitude;
         }
->>>>>>> refs/remotes/origin/master
-
     }
 }
 
