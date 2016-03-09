@@ -1,6 +1,7 @@
 package com.example.masommer.mapster;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
@@ -38,12 +39,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-<<<<<<< HEAD
 import android.widget.AdapterView;
-=======
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
->>>>>>> refs/remotes/origin/master
 import android.widget.Toast;
 
 import com.google.android.gms.location.LocationListener;
@@ -83,8 +81,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor>, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener {
 
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor>, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener, BlankFragment.OnFragmentInteractionListener {
 
     private GoogleMap mMap;
     private final int MY_PERMISSION_LOCATION_ACCESS = 1;
@@ -94,6 +92,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String provider;
     private Marker marker;
     private boolean landscape;
+    private Polyline newPolyline;
+    private BlankFragment fragment;
+    private android.support.v4.app.FragmentManager fragmentManager;
+    private android.support.v4.app.FragmentTransaction fragmentTransaction;
+
+
 
     private ListView listView;
     private ArrayList<Building> buildingList = new ArrayList<Building>();
@@ -113,13 +117,24 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private CameraPosition cameraPos;
 
+    private boolean fragmentUpWhenRotationChanged;
+
     private DatabaseTable db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        if (savedInstanceState != null && savedInstanceState.getBoolean("fragmentUpWhenRotationChanged")){
+            fragment = new BlankFragment();
+            fragment.show(getFragmentManager(), "Diag");
+        }
+        db = new DatabaseTable(this);
         //db = new DatabaseTable(this);
+        if (savedInstanceState != null && savedInstanceState.getBoolean("fragmentUpWhenRotationChanged")){
+            fragment = new BlankFragment();
+            fragment.show(getFragmentManager(), "Diag");
+        }
+        db = new DatabaseTable(this);
         lm = (LocationManager) getSystemService(LOCATION_SERVICE);
         // Creating a criteria object to retrieve provider
         Criteria criteria = new Criteria();
@@ -142,9 +157,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     listItems);
             listView.setAdapter(adapter);
         }
-
-
-
+        fragmentManager = getSupportFragmentManager();
+        fragmentTransaction = fragmentManager.beginTransaction();
     }
 
     protected void onNewIntent(Intent intent) {
@@ -177,9 +191,29 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private void showResults(String query) {
+    /*private void showResults(String query) {
 
-        Cursor cursor = new CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
+        Cursor cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
+=======
+=======
+>>>>>>> Martin
+/*    private void showResults(String query) {
+
+        CursorLoader cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
+=======
+    /*private void showResults(String query) {
+
+        Cursor cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
+>>>>>>> master
+=======
+    /*private void showResults(String query) {
+
+        Cursor cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
+>>>>>>> master
+<<<<<<< HEAD
+>>>>>>> Martin
+=======
+>>>>>>> Martin
                 new String[]{query}, null);
         if (cursor == null) {
             // There are no results
@@ -218,7 +252,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //                }
 //            });
         }
-    }
+    }*/
 
     /**
      * Manipulates the map once available.
@@ -229,6 +263,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
      */
+
+
+
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         if (ContextCompat.checkSelfPermission(this,
@@ -304,18 +342,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Location location = mMap.getMyLocation();
             LatLng currentPos = new LatLng(currentPositionLatitude, currentPositionLongtitude);
             LatLng targetPos = new LatLng(roomMarker.getPosition().latitude, roomMarker.getPosition().longitude);
-            findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");            /*ArrayList<LatLng> directionPoints = new ArrayList<LatLng>();
-            for (int i = 0; i < directionPoints.size(); i++) {
-                LatLng point = new LatLng(latitudeList[i], longtitudeList[i]);
-                directionPoints.add(point);
-            }
-            Polyline newPolyline;
-            GoogleMap mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
-            PolylineOptions rectLine = new PolylineOptions().width(8).color(Color.RED);
-            for (int i = 0; i < directionPoints.size(); i++) {
-                rectLine.add((LatLng) directionPoints.get(i));
-            }
-            newPolyline = mMap.addPolyline(rectLine);*/
+            findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");
         }
         //marker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.415370973562936, -119.84701473265886)));
         //createBuildingList();
@@ -429,8 +456,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void handleGetDirectionsResult(ArrayList directionPoints) {
-        Polyline newPolyline;
-        GoogleMap mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
         PolylineOptions rectLine = new PolylineOptions().width(8).color(Color.RED);
         longtitudeList = new double[directionPoints.size()];
         latitudeList = new double[directionPoints.size()];
@@ -444,11 +469,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void onZoomToMarkersClick(MenuItem item) {
-        if (landscape){
+        /*if (landscape){
             listView.setVisibility(View.VISIBLE);
             listItems.add("NH1111 : ");
             adapter.notifyDataSetChanged();
-        }
+        }*/
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         if (roomMarker != null && ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
@@ -466,8 +491,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.animateCamera(cu);
     }
 
-    public void onDirectionClick(MenuItem item){
-        if (roomMarker != null && (ContextCompat.checkSelfPermission(this,
+    public void onDirectionWalkClick(MenuItem item){
+        if (newPolyline == null && roomMarker != null && (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED)){
             Location location = mMap.getMyLocation();
@@ -477,10 +502,40 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             currentPositionLatitude = currentPos.latitude;
             findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");
         }
+        else if (newPolyline != null){
+            newPolyline.remove();
+            newPolyline = null;
+        }
         else{
             return;
         }
 
+    }
+
+    public void onDirectionDriveClick(MenuItem item){
+        if (newPolyline == null && roomMarker != null && (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED)){
+            Location location = mMap.getMyLocation();
+            LatLng currentPos = new LatLng(location.getLatitude(), location.getLongitude());
+            LatLng targetPos = new LatLng(roomMarker.getPosition().latitude, roomMarker.getPosition().longitude);
+            currentPositionLongtitude = currentPos.longitude;
+            currentPositionLatitude = currentPos.latitude;
+            findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "driveing");
+        }
+        else if (newPolyline != null){
+            newPolyline.remove();
+            newPolyline = null;
+        }
+        else{
+            return;
+        }
+    }
+
+    public void onInfoClicked(MenuItem item){
+        fragmentUpWhenRotationChanged = true;
+        fragment = new BlankFragment();
+        fragment.show(getFragmentManager(), "Diag");
     }
 
     @Override
@@ -489,7 +544,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         switch (id) {
             case DATABASE_LOADER:
                 // Returns a new CursorLoader
-                return new CursorLoader(
+                return new android.support.v4.content.CursorLoader(
                         getApplicationContext(),   // Parent activity context
                         DatabaseProvider.CONTENT_URI,
                         null,
@@ -504,12 +559,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-
-    }
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {}
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+    }
+
 
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -521,6 +576,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         outState.putDoubleArray("latitudeList", latitudeList);
         outState.putDouble("currentPositionLongtitude", currentPositionLongtitude);
         outState.putDouble("currentPositionLatitude", currentPositionLatitude);
+        outState.putBoolean("fragmentUpWhenRotationChanged", fragmentUpWhenRotationChanged);
 
     }
 
@@ -535,10 +591,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         longtitudeList = savedInstanceState.getDoubleArray("longtitudeList");
         currentPositionLongtitude = savedInstanceState.getDouble("currentPositionLongtitude");
         currentPositionLatitude = savedInstanceState.getDouble("currentPositionLatitude");
+        fragmentUpWhenRotationChanged = savedInstanceState.getBoolean("fragmentUpWhenRotationChanged");
     }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
         if (cameraPos != null) {
             mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPos));
@@ -553,6 +610,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             currentCameraLatitude = mMap.getCameraPosition().target.latitude;
             currentCameraLongtitude = mMap.getCameraPosition().target.longitude;
         }
+        if (fragment != null && fragment.isVisible()){
+            fragment.dismiss();
+        }
+
     }
+
+    public void onClickFragmentOk(View v){
+        fragmentUpWhenRotationChanged = false;
+        if (fragment != null){
+            fragment.dismiss();
+        }
+    }
+
+    public void onFragmentInteraction(Uri uri){}
+
+
+
 }
 
