@@ -190,9 +190,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             //showResults(query);
         }
     }
-
-<<<<<<< HEAD
-=======
+    
     /*private void showResults(String query) {
 
         Cursor cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
