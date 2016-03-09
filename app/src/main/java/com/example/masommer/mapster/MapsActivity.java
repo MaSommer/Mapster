@@ -684,7 +684,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         final PopupWindow popupWindow = new PopupWindow(popupView,
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 
-        // Example: If you have a ListView inside `popup_layout.xml`
         ListView lv = (ListView) popupView.findViewById(R.id.listView);
 
         PopupCursorAdapter pcAdapter = new PopupCursorAdapter(this, cursor);
