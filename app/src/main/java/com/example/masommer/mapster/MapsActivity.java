@@ -562,7 +562,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {}
 
     @Override
-    public void onLoaderReset(Loader<Cursor> loader) {}
+    public void onLoaderReset(Loader<Cursor> loader) {
+    }
 
 
     protected void onSaveInstanceState(Bundle outState) {
@@ -623,6 +624,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void onFragmentInteraction(Uri uri){}
+
+    public void zoomToRoom(LatLng latLng) {
+        CameraPosition cp = new CameraPosition.Builder()
+                .target(latLng)
+                .zoom(19.9f)
+                .build();
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cp));
+    }
 
 
 
