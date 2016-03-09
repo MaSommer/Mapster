@@ -132,6 +132,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private boolean fragmentUpWhenRotationChanged;
 
     private DatabaseTable db;
+    private android.location.LocationListener locationListener;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -163,6 +165,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     listItems);
             listView.setAdapter(adapter);
         }
+        locationListener = new android.location.LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {}
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {}
+            @Override
+            public void onProviderEnabled(String provider) {}
+            @Override
+            public void onProviderDisabled(String provider) {}
+        };
+        try{
+            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 4, locationListener);
+
+        }
+        catch (SecurityException sec){
+            sec.printStackTrace();
+        }
         fragmentManager = getSupportFragmentManager();
         fragmentTransaction = fragmentManager.beginTransaction();
         prefs = getSharedPreferences("com.mycompany.myAppName", MODE_PRIVATE);
@@ -179,16 +198,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             // handles a click on a search suggestion; launches activity to show word
             //System.out.print("HEIIIII");
-            String path = getIntent().getDataString();
-            Log.i("path", path);
-//            Cursor c = managedQuery(uri, null, null, null, null);
-//            c.moveToFirst();
-//            int latIndex = c.getColumnIndexOrThrow(DatabaseTable.COL_LAT);
-//            int longIndex = c.getColumnIndexOrThrow(DatabaseTable.COL_LONG);
-//            double latitude = Double.parseDouble(c.getString(latIndex));
-//            double longitude = Double.parseDouble(c.getString(longIndex));
-//            LatLng roomPoint = new LatLng(latitude,longitude);
-//            Marker room = mMap.addMarker(new MarkerOptions().position(roomPoint));
+            //String path = intent.getStringExtra(SearchManager.SUGGEST_COLUMN_INTENT_DATA_ID);
+            //Log.i("path", intent.getData().getPath());
+            Uri uri = intent.getData();
+            roomFromSuggestion(uri);
+
 //            Toast.makeText(getApplicationContext(), "VOILA!", Toast.LENGTH_LONG).show();
         } else if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             // handles a search query
@@ -211,6 +225,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             //String query = intent.getStringExtra(SearchManager.QUERY);
             //showResults(query);
         }
+    }
+
+    private void roomFromSuggestion(Uri uri) {
+        Cursor c = managedQuery(uri, null, null, null, null);
+        c.moveToFirst();
+        int latIndex = c.getColumnIndexOrThrow(DatabaseTable.COL_LAT);
+        int longIndex = c.getColumnIndexOrThrow(DatabaseTable.COL_LONG);
+        double latitude = Double.parseDouble(c.getString(latIndex));
+        double longitude = Double.parseDouble(c.getString(longIndex));
+        LatLng roomPoint = new LatLng(latitude,longitude);
+        roomMarker.remove();
+        roomMarker = mMap.addMarker(new MarkerOptions().position(roomPoint));
+        zoomToRoom(roomMarker.getPosition());
     }
 
 //    private void showResults(String query) {
@@ -261,6 +288,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 =======
 =======
 >>>>>>> Martin
+>>>>>>> master
 /*    private void showResults(String query) {
 
         CursorLoader cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
@@ -275,9 +303,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Cursor cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
 >>>>>>> master
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
 >>>>>>> Martin
 =======
 >>>>>>> Martin
+>>>>>>> master
                 new String[]{query}, null);
         if (cursor == null) {
             // There are no results
@@ -343,6 +374,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
         mMap = googleMap;
+        mMap.setBuildingsEnabled(false);
         mMap.setOnMapClickListener(this);
         //Add north hall to map
         BitmapFactory.Options options = new BitmapFactory.Options();
@@ -750,6 +782,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         ListView lv = (ListView) popupView.findViewById(R.id.listView);
 
+        //add header
+        TextView list_title = new TextView(this);
+        list_title.setText(R.string.result_header);
+        list_title.setTextSize(20);
+        list_title.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        list_title.setTextColor(getResources().getColor(R.color.primaryText,getTheme()));
+        list_title.setBackgroundColor(getResources().getColor(R.color.colorPrimary,getTheme()));
+        lv.addHeaderView(list_title);
+
         final PopupCursorAdapter pcAdapter = new PopupCursorAdapter(lv.getContext(), cursor);
         lv.setAdapter(pcAdapter);
 
@@ -765,7 +806,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 //LinearLayout lin = (LinearLayout) view;
                 //TODO fix layout, remove shortest path if existing
                 roomMarker.remove();
-                TextView tv = (TextView)view.findViewById(R.id.lvItem);
+                TextView tv = (TextView) view.findViewById(R.id.lvItem);
                 String building = "" + tv.getText();
                 String latitude = (String) tv.getTag(R.string.lat_tag);
                 String longitude = (String) tv.getTag(R.string.long_tag);
@@ -775,12 +816,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 popupWindow.dismiss();
             }
         });
-        popupWindow.showAsDropDown(findViewById(R.id.action_search),0,20, Gravity.CENTER_HORIZONTAL);
+        popupWindow.showAtLocation(findViewById(R.id.map_layout),Gravity.CENTER,0,0);
+        //popupWindow.showAsDropDown(findViewById(R.id.action_search),0,20, Gravity.CENTER_HORIZONTAL);
         /*
         http://stackoverflow.com/questions/18461990/pop-up-window-to-display-some-stuff-in-a-fragment
         https://guides.codepath.com/android/Populating-a-ListView-with-a-CursorAdapter#attaching-the-adapter-to-a-listview
         */
     }
+
+
 
 
 }

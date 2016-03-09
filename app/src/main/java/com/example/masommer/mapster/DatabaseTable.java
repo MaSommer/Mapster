@@ -39,9 +39,9 @@ public class DatabaseTable extends ListActivity{
     private static final int DATABASE_VERSION = 1;
 
 
-    private static final HashMap<String,String> mColumnMap = buildColumnMap();
 
     private final DatabaseOpenHelper mDatabaseOpenHelper;
+    private static final HashMap<String,String> mColumnMap = buildColumnMap();
 
 
     public DatabaseTable(Context context) {
@@ -92,8 +92,8 @@ public class DatabaseTable extends ListActivity{
                 SearchManager.SUGGEST_COLUMN_INTENT_DATA_ID);
         map.put(SearchManager.SUGGEST_COLUMN_INTENT_DATA, "rowid AS "+
                 SearchManager.SUGGEST_COLUMN_INTENT_DATA);
-        map.put(SearchManager.SUGGEST_COLUMN_SHORTCUT_ID, "rowid AS " +
-                SearchManager.SUGGEST_COLUMN_SHORTCUT_ID);
+        //map.put(SearchManager.SUGGEST_COLUMN_SHORTCUT_ID, "rowid AS " +
+        //       SearchManager.SUGGEST_COLUMN_SHORTCUT_ID);
         return map;
     }
 
