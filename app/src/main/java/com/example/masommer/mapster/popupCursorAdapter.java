@@ -11,8 +11,8 @@ import android.widget.TextView;
 /**
  * Created by agmal_000 on 08.03.2016.
  */
-public class popupCursorAdapter extends CursorAdapter {
-    public popupCursorAdapter(Context context, Cursor c) {
+public class PopupCursorAdapter extends CursorAdapter {
+    public PopupCursorAdapter(Context context, Cursor c) {
         super(context, c);
     }
 
