@@ -15,6 +15,7 @@ class PopupCursorAdapter extends CursorAdapter {
 
     private static final int LAT_TAG = 1;
     private static final int LONG_TAG = 2;
+
     public PopupCursorAdapter(Context context, Cursor c) {
         super(context, c);
     }
