@@ -12,12 +12,10 @@ import android.widget.TextView;
  * Created by agmal_000 on 08.03.2016.
  */
 class PopupCursorAdapter extends CursorAdapter {
-<<<<<<< HEAD
-=======
 
     private static final int LAT_TAG = 1;
     private static final int LONG_TAG = 2;
->>>>>>> refs/remotes/origin/master
+
     public PopupCursorAdapter(Context context, Cursor c) {
         super(context, c);
     }
