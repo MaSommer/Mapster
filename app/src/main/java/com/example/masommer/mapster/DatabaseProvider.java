@@ -105,7 +105,7 @@ public class DatabaseProvider extends ContentProvider {
                 }
                 return search(selectionArgs[0]);
             case GET_ROOM:
-                return getWord(uri);
+                return getRoom(uri);
             case REFRESH_SHORTCUT:
                 return refreshShortcut(uri);
             default:
@@ -138,10 +138,12 @@ public class DatabaseProvider extends ContentProvider {
         return mDatabase.getWordMatches(query, columns);
     }
 
-    private Cursor getWord(Uri uri) {
+    private Cursor getRoom(Uri uri) {
         String rowId = uri.getLastPathSegment();
         String[] columns = new String[] {
-                DatabaseTable.COL_ROOM};
+                DatabaseTable.COL_ROOM,
+                DatabaseTable.COL_LAT,
+                DatabaseTable.COL_LONG};
 //                DictionaryDatabase.KEY_DEFINITION};
 
         return mDatabase.getRoom(rowId, columns);
