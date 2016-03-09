@@ -41,10 +41,7 @@ import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
-<<<<<<< HEAD
 import android.support.v7.widget.Toolbar;
-=======
->>>>>>> master
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -55,12 +52,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-<<<<<<< HEAD
 import android.widget.PopupMenu;
-=======
 import android.widget.PopupWindow;
 import android.widget.TextView;
->>>>>>> master
 import android.widget.Toast;
 
 
@@ -476,7 +470,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cp));
         mMap.setOnMarkerClickListener(this);
         //for testing
-        roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.41447398728048, -119.8470713943243)));
+        //roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.41447398728048, -119.8470713943243)));
 
         //Set my location
         try {
@@ -746,16 +740,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-<<<<<<< HEAD
-    }
-=======
         Log.i("morro", data.getCount() + "");
         SearchView sv = (SearchView)findViewById(R.id.action_search);
         sv.clearFocus();
         showPopup(data);
     }
 
->>>>>>> master
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
