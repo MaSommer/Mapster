@@ -625,6 +625,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void onFragmentInteraction(Uri uri){}
 
+    public void zoomToRoom(LatLng latLng) {
+        CameraPosition cp = new CameraPosition.Builder()
+                .target(latLng)
+                .zoom(19.9f)
+                .build();
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cp));
+    }
+
 
 
 }
