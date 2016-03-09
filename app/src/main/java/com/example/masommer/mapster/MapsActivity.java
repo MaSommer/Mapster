@@ -75,7 +75,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener {
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener, BlankFragment.OnFragmentInteractionListener {
 
 
     private GoogleMap mMap;
@@ -85,6 +85,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String provider;
     private Marker marker;
     private boolean landscape;
+    private Polyline newPolyline;
+    private BlankFragment fragment;
 
     private ListView listView;
     private ArrayList<Building> buildingList = new ArrayList<Building>();
@@ -249,18 +251,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Location location = mMap.getMyLocation();
             LatLng currentPos = new LatLng(currentPositionLatitude, currentPositionLongtitude);
             LatLng targetPos = new LatLng(roomMarker.getPosition().latitude, roomMarker.getPosition().longitude);
-            findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");            /*ArrayList<LatLng> directionPoints = new ArrayList<LatLng>();
-            for (int i = 0; i < directionPoints.size(); i++) {
-                LatLng point = new LatLng(latitudeList[i], longtitudeList[i]);
-                directionPoints.add(point);
-            }
-            Polyline newPolyline;
-            GoogleMap mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
-            PolylineOptions rectLine = new PolylineOptions().width(8).color(Color.RED);
-            for (int i = 0; i < directionPoints.size(); i++) {
-                rectLine.add((LatLng) directionPoints.get(i));
-            }
-            newPolyline = mMap.addPolyline(rectLine);*/
+            findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");
         }
         //marker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.415370973562936, -119.84701473265886)));
         //createBuildingList();
@@ -374,8 +365,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void handleGetDirectionsResult(ArrayList directionPoints) {
-        Polyline newPolyline;
-        GoogleMap mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
         PolylineOptions rectLine = new PolylineOptions().width(8).color(Color.RED);
         longtitudeList = new double[directionPoints.size()];
         latitudeList = new double[directionPoints.size()];
@@ -411,8 +400,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.animateCamera(cu);
     }
 
-    public void onDirectionClick(MenuItem item){
-        if (roomMarker != null && (ContextCompat.checkSelfPermission(this,
+    public void onDirectionWalkClick(MenuItem item){
+        if (newPolyline == null && roomMarker != null && (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED)){
             Location location = mMap.getMyLocation();
@@ -422,10 +411,39 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             currentPositionLatitude = currentPos.latitude;
             findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");
         }
+        else if (newPolyline != null){
+            newPolyline.remove();
+            newPolyline = null;
+        }
         else{
             return;
         }
 
+    }
+
+    public void onDirectionDriveClick(MenuItem item){
+        if (newPolyline == null && roomMarker != null && (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED)){
+            Location location = mMap.getMyLocation();
+            LatLng currentPos = new LatLng(location.getLatitude(), location.getLongitude());
+            LatLng targetPos = new LatLng(roomMarker.getPosition().latitude, roomMarker.getPosition().longitude);
+            currentPositionLongtitude = currentPos.longitude;
+            currentPositionLatitude = currentPos.latitude;
+            findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "driveing");
+        }
+        else if (newPolyline != null){
+            newPolyline.remove();
+            newPolyline = null;
+        }
+        else{
+            return;
+        }
+    }
+
+    public void onInfoClicked(MenuItem item){
+        fragment = new BlankFragment();
+        fragment.show(getFragmentManager(), "Diag");
     }
 
     @Override
@@ -473,5 +491,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
     }
+
+    public void onClickFragmentOk(View v){
+        fragment.dismiss();
+    }
+
+    public void onFragmentInteraction(Uri uri){}
+
 }
 
