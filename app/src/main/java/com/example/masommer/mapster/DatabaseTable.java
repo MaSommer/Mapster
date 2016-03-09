@@ -11,7 +11,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.os.Bundle;
+import android.provider.BaseColumns;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -19,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 
 /**
  * Created by agmal_000 on 07.03.2016.
@@ -27,20 +30,72 @@ public class DatabaseTable extends ListActivity{
 
     private static final String TAG = "RoomDatabase";
 
-    public static final String COL_ROOM = "ROOM";
+    public static final String COL_ROOM = SearchManager.SUGGEST_COLUMN_TEXT_1;
     public static final String COL_LAT = "LATITUDE";
     public static final String COL_LONG = "LONGITUDE";
 
-    private static final String DATABASE_NAME = "ROOMDATABASE";
-    private static final String FTS_VIRTUAL_TABLE = "FTS";
+    private static final String DATABASE_NAME = "database";
+    private static final String FTS_VIRTUAL_TABLE = "FTSdatabase";
     private static final int DATABASE_VERSION = 1;
 
+
+    private static final HashMap<String,String> mColumnMap = buildColumnMap();
+
     private final DatabaseOpenHelper mDatabaseOpenHelper;
+
 
     public DatabaseTable(Context context) {
         mDatabaseOpenHelper = new DatabaseOpenHelper(context);
     }
 
+
+    public Cursor getWordMatches(String query, String[] columns) {
+
+        String selection = COL_ROOM + " MATCH ?";
+        String[] selectionArgs = new String[] {query+"*"};
+
+        return query(selection, selectionArgs, columns);
+    }
+
+    public Cursor getRoom(String rowId, String[] columns) {
+        String selection = "rowid = ?";
+        String[] selectionArgs = new String[]{rowId};
+
+        return query(selection, selectionArgs, columns);
+    }
+
+    private Cursor query(String selection, String[] selectionArgs, String[] columns) {
+        SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
+        builder.setTables(FTS_VIRTUAL_TABLE);
+        builder.setProjectionMap(mColumnMap);
+
+        Cursor cursor = builder.query(mDatabaseOpenHelper.getReadableDatabase(),
+                columns, selection, selectionArgs, null, null, null);
+
+        if (cursor == null) {
+            return null;
+        } else if (!cursor.moveToFirst()) {
+            cursor.close();
+            return null;
+        }
+        return cursor;
+    }
+
+    private static HashMap<String,String> buildColumnMap() {
+        HashMap<String,String> map = new HashMap<String,String>();
+        map.put(COL_ROOM, COL_ROOM);
+        map.put(COL_LAT, COL_LAT);
+        map.put(COL_LONG,COL_LONG);
+        map.put(BaseColumns._ID, "rowid AS " +
+                BaseColumns._ID);
+        map.put(SearchManager.SUGGEST_COLUMN_INTENT_DATA_ID, "rowid AS " +
+                SearchManager.SUGGEST_COLUMN_INTENT_DATA_ID);
+        map.put(SearchManager.SUGGEST_COLUMN_INTENT_DATA, "rowid AS "+
+                SearchManager.SUGGEST_COLUMN_INTENT_DATA);
+        map.put(SearchManager.SUGGEST_COLUMN_SHORTCUT_ID, "rowid AS " +
+                SearchManager.SUGGEST_COLUMN_SHORTCUT_ID);
+        return map;
+    }
 
     private static class DatabaseOpenHelper extends SQLiteOpenHelper {
 
@@ -65,6 +120,8 @@ public class DatabaseTable extends ListActivity{
             mDatabase.execSQL(FTS_TABLE_CREATE);
             loadAll();
         }
+
+
 
 
         @Override
@@ -97,7 +154,8 @@ public class DatabaseTable extends ListActivity{
             try {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    String[] strings = TextUtils.split(line, " ");
+                    //String[] strings = TextUtils.split(line, " ");
+                    String[] strings = line.split("\\s+");
                     //if (strings.length < 3) continue;
                     long id = addLocation(strings[0].trim(), strings[1].trim(), strings[2].trim());
                     if (id < 0) {
@@ -118,37 +176,6 @@ public class DatabaseTable extends ListActivity{
             return mDatabase.insert(FTS_VIRTUAL_TABLE, null, initialValues);
         }
 
-    }
-
-    public Cursor getWordMatches(String query, String[] columns) {
-
-        String selection = COL_ROOM + " MATCH ?";
-        String[] selectionArgs = new String[] {query+"*"};
-
-        return query(selection, selectionArgs, columns);
-    }
-
-    public Cursor getRoom(String rowId, String[] columns) {
-        String selection = "rowid = ?";
-        String[] selectionArgs = new String[]{rowId};
-
-        return query(selection, selectionArgs, columns);
-    }
-
-    private Cursor query(String selection, String[] selectionArgs, String[] columns) {
-        SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
-        builder.setTables(FTS_VIRTUAL_TABLE);
-
-        Cursor cursor = builder.query(mDatabaseOpenHelper.getReadableDatabase(),
-                columns, selection, selectionArgs, null, null, null);
-
-        if (cursor == null) {
-            return null;
-        } else if (!cursor.moveToFirst()) {
-            cursor.close();
-            return null;
-        }
-        return cursor;
     }
 
 
