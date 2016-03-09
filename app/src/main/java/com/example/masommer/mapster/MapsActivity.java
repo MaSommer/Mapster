@@ -39,12 +39,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-<<<<<<< HEAD
 import android.widget.AdapterView;
-=======
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
->>>>>>> refs/remotes/origin/master
 import android.widget.Toast;
 
 import com.google.android.gms.location.LocationListener;
@@ -84,12 +81,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-<<<<<<< HEAD
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor>, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener {
-=======
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener, BlankFragment.OnFragmentInteractionListener {
->>>>>>> Martin
 
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor>, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener, BlankFragment.OnFragmentInteractionListener {
+
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor>, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener, BlankFragment.OnFragmentInteractionListener {
 
     private GoogleMap mMap;
     private final int MY_PERMISSION_LOCATION_ACCESS = 1;
@@ -131,16 +126,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-<<<<<<< HEAD
         if (savedInstanceState != null && savedInstanceState.getBoolean("fragmentUpWhenRotationChanged")){
             fragment = new BlankFragment();
             fragment.show(getFragmentManager(), "Diag");
         }
         db = new DatabaseTable(this);
-=======
-
         //db = new DatabaseTable(this);
->>>>>>> master
+        if (savedInstanceState != null && savedInstanceState.getBoolean("fragmentUpWhenRotationChanged")){
+            fragment = new BlankFragment();
+            fragment.show(getFragmentManager(), "Diag");
+        }
+        db = new DatabaseTable(this);
         lm = (LocationManager) getSystemService(LOCATION_SERVICE);
         // Creating a criteria object to retrieve provider
         Criteria criteria = new Criteria();
@@ -197,9 +193,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private void showResults(String query) {
+<<<<<<< HEAD
+/*    private void showResults(String query) {
 
-        Cursor cursor = new CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
+        CursorLoader cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
+=======
+    /*private void showResults(String query) {
+
+        Cursor cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
+>>>>>>> master
+=======
+    /*private void showResults(String query) {
+
+        Cursor cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
+>>>>>>> master
                 new String[]{query}, null);
         if (cursor == null) {
             // There are no results
@@ -238,7 +245,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //                }
 //            });
         }
-    }
+    }*/
 
     /**
      * Manipulates the map once available.
@@ -249,6 +256,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
      */
+
+
+
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         if (ContextCompat.checkSelfPermission(this,
@@ -520,14 +531,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         fragment.show(getFragmentManager(), "Diag");
     }
 
-    @Override
 <<<<<<< HEAD
+    @Override
+=======
+>>>>>>> master
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         String[] qry = {args.getString("QUERY")};
         switch (id) {
             case DATABASE_LOADER:
                 // Returns a new CursorLoader
-                return new CursorLoader(
+                return new android.support.v4.content.CursorLoader(
                         getApplicationContext(),   // Parent activity context
                         DatabaseProvider.CONTENT_URI,
                         null,
@@ -542,13 +555,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-
-    }
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {}
 
     @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-=======
+    public void onLoaderReset(Loader<Cursor> loader) {}
+
+
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putDouble("roomMarkerLongtitude", roomMarkerLongtitude);
@@ -593,13 +605,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             currentCameraLatitude = mMap.getCameraPosition().target.latitude;
             currentCameraLongtitude = mMap.getCameraPosition().target.longitude;
         }
-<<<<<<< HEAD
         if (fragment != null && fragment.isVisible()){
             fragment.dismiss();
         }
-=======
->>>>>>> refs/remotes/origin/master
->>>>>>> master
 
     }
 
