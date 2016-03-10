@@ -217,6 +217,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         editToolbar.setTitleTextColor(Color.WHITE);
         editToolbar.setTitle("Edit favourites");
         editToolbar.inflateMenu(R.menu.edit_favourites);
+        favouritesMarkersList = new ArrayList<Marker>();
+
 
 
 
@@ -952,7 +954,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Iterator it = favourites.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry pair = (Map.Entry)it.next();
-                Marker marker = mMap.addMarker(new MarkerOptions().position((LatLng) pair.getValue()).title((String) pair.getKey()));
+                Marker marker = mMap.addMarker(new MarkerOptions().position((LatLng) pair.getValue()).title((String) pair.getKey())
+                        .icon(BitmapDescriptorFactory
+                                .defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
                 favouritesMarkersList.add(marker);
                 builder.include(marker.getPosition());
 
@@ -979,14 +983,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void onEditFavouriteClicked(MenuItem item){
-        SearchView sv = (SearchView)findViewById(R.id.action_search);
+        SearchView sv = (SearchView) findViewById(R.id.action_search);
         sv.clearFocus();
-        Log.i("favs on edit", "" + favourites);
+        if (favourites.isEmpty()){
+            String data = "You have no favourites";
+            Toast.makeText(this, data, Toast.LENGTH_LONG).show();
+            return;
+        }
         if (roomMarker != null){
             roomMarker.remove();
-            roomMarker = null;
         }
-        favouritesMarkersList = new ArrayList<Marker>();
+        Log.i("favs on edit", "" + favourites);
         mode = EDIT_MODE;
         //editToolbar.setVisibility(View.VISIBLE);
         if (mActionMode != null) {
@@ -999,9 +1006,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry)it.next();
-            Marker marker = mMap.addMarker(new MarkerOptions().position((LatLng) pair.getValue()).title((String) pair.getKey()));
-            Log.i("pair", "key: " +pair.getKey().toString() + " value: " + pair.getValue().toString());
-            Log.i("marker", ""+marker);
+            Marker marker = mMap.addMarker(new MarkerOptions().position((LatLng) pair.getValue()).title((String) pair.getKey())
+                    .icon(BitmapDescriptorFactory
+                            .defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
             favouritesMarkersList.add(marker);
             builder.include(marker.getPosition());
         }
@@ -1012,6 +1019,26 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         String data = "Choose marker to edit...";
         Toast.makeText(this, data, Toast.LENGTH_LONG).show();
     }
+
+
+    public void onArrowBackClicked(MenuItem item){
+        SearchView sv = (SearchView)findViewById(R.id.action_search);
+        sv.clearFocus();
+        editToolbar.setVisibility(View.GONE);
+        onMarkerClickRemove = false;
+        mode = NORMAL_MODE;
+        onHideFavouritesClicked(item);
+        roomMarker = mMap.addMarker(new MarkerOptions().position(roomMarker.getPosition()));
+    }
+//    public void onArrowBackClicked(MenuItem item){
+//        SearchView sv = (SearchView)findViewById(R.id.action_search);
+//        sv.clearFocus();
+//        editToolbar.setVisibility(View.GONE);
+//        onMarkerClickRemove = false;
+//        mode = NORMAL_MODE;
+//        onHideFavouritesClicked(item);
+//    }
+
 
 //    public void onArrowBackClicked(MenuItem item){
 //        SearchView sv = (SearchView)findViewById(R.id.action_search);
@@ -1030,14 +1057,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         onMarkerClickRemove = false;
         if (roomMarker != null && !favourites.containsKey(roomMarker.getTitle())) {
             if (roomMarker != null) {
-                Log.i("this room has", ""+roomMarker.getTitle());
+                Log.i("this room has", "" + roomMarker.getTitle());
                 favourites.put(roomMarker.getTitle(), roomMarker.getPosition());
                 saveToFavourites(roomMarker);
                 String data = roomMarker.getTitle() + " is added to favourites";
                 Toast.makeText(this, data,
                         Toast.LENGTH_LONG).show();
-                roomMarker.remove();
-                roomMarker = null;
             }
         }
         else if (roomMarker == null){
@@ -1083,6 +1108,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             String line;
             try{
                 while ((line = bufferedReader.readLine()) != null) {
+                    line = line.trim();
+                    Log.i("line", line);
                     String[] roomInfo = line.split(" ");
                     String roomName = roomInfo[0];
                     double latitude = Double.parseDouble(roomInfo[1]);
@@ -1159,7 +1186,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             String kuk = "";
             Log.i("string", ""+Arrays.toString(string));
             for (int i = 0; i < string.length; i++) {
-                kuk+= string[i] + " ";
+                if (i%3 == 2){
+                    kuk+= string[i];
+                }
+                else{
+                    kuk+= string[i] + " ";
+                }
                 Log.i("kuk", kuk);
                 Log.i("i", ""+i);
                 if (i%3 == 2){
