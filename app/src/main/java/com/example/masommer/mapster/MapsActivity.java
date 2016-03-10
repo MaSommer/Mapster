@@ -971,6 +971,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onHideFavouritesClicked(MenuItem item){
         SearchView sv = (SearchView)findViewById(R.id.action_search);
         sv.clearFocus();
+        Log.i("favs", ""+favouritesMarkersList);
         if (favouritesMarkersList != null) {
             if (favouritesMarkersList.isEmpty()) {
                 //No favourites to hide
@@ -999,7 +1000,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (mActionMode != null) {
             return;
         }
-
+        favouritesMarkersList = new ArrayList<Marker>();
         // Start the CAB using the ActionMode.Callback defined above
         mActionMode = startActionMode(mActionModeCallback);
         Iterator it = favourites.entrySet().iterator();
@@ -1087,6 +1088,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.i("markerToDelete", "" + markerToDelete);
         if (markerToDelete != null){
             markerToDelete.remove();
+            Log.i("hei1", "sveis" + favouritesMarkersList.toString());
             favourites.remove(markerToDelete.getTitle());
             favouritesMarkersList.remove(markerToDelete);
             removeMarkerFromMemory(markerToDelete);
@@ -1260,6 +1262,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Log.i("markerToDelete", "" + markerToDelete);
                     if (markerToDelete != null) {
                         markerToDelete.remove();
+                        Log.i("hei1", "rass");
+
                         favourites.remove(markerToDelete.getTitle());
                         favouritesMarkersList.remove(markerToDelete);
                         removeMarkerFromMemory(markerToDelete);
@@ -1271,8 +1275,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         @Override
-        public void onDestroyActionMode(ActionMode mode) {
+        public void onDestroyActionMode(ActionMode mode1) {
+            mode = NORMAL_MODE;
             mActionMode = null;
+            if (favouritesMarkersList != null) {
+                if (favouritesMarkersList.isEmpty()) {
+                    //No favourites to hide
+                } else {
+                    for (Marker marker : favouritesMarkersList) {
+                        marker.remove();
+                    }
+                }
+            }
         }
     };
 }
