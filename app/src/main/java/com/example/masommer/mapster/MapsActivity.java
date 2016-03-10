@@ -96,6 +96,7 @@ import java.io.OutputStreamWriter;
 import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -230,6 +231,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         onMarkerClickRemove = false;
         Log.i("i am her", "looser");
         loadFavourites();
+        //deleteFile();
         mode = NORMAL_MODE;
         editToolbar = (Toolbar) findViewById(R.id.toolbar);
         editToolbar.setVisibility(View.GONE);
@@ -926,22 +928,31 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void onAddFavouriteClicked(MenuItem item){
         onMarkerClickRemove = false;
-        favouritesMarkersList = new ArrayList<Marker>();
-        if (!favourites.containsKey(roomMarker.getId())) {
+        if (roomMarker != null && !favourites.containsKey(roomMarker.getTitle())) {
             if (roomMarker != null) {
-                favourites.put(roomMarker.getId(), roomMarker.getPosition());
+                Log.i("this room has", ""+roomMarker.getTitle());
+                favourites.put(roomMarker.getTitle(), roomMarker.getPosition());
                 saveToFavourites(roomMarker);
-                String data = roomMarker.getId() + " is added to favourites";
+                String data = roomMarker.getTitle() + " is added to favourites";
                 Toast.makeText(this, data,
                         Toast.LENGTH_LONG).show();
+                roomMarker.remove();
+                roomMarker = null;
             }
         }
-        else{
-            String data = "Your favourites already consist of the room "+roomMarker.getId();
+        else if (roomMarker == null){
+            String data = "You need to specify a room first!";
             Toast.makeText(this, data,
                     Toast.LENGTH_LONG).show();
+            return;
         }
-        Log.i("favs", ""+favourites);
+        else{
+            String data = "Your favourites already consist of the room "+roomMarker.getTitle();
+            Toast.makeText(this, data,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        Log.i("favs", "" + favourites);
     }
 
     public void onShowFavouritesClicked(MenuItem item){
@@ -952,39 +963,57 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Toast.LENGTH_LONG).show();
         }
         else{
+            LatLngBounds.Builder builder = new LatLngBounds.Builder();
             Iterator it = favourites.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry pair = (Map.Entry)it.next();
                 Marker marker = mMap.addMarker(new MarkerOptions().position((LatLng) pair.getValue()).title((String) pair.getKey()));
                 favouritesMarkersList.add(marker);
+                builder.include(marker.getPosition());
+
             }
+            LatLngBounds bounds = builder.build();
+            int padding = 150; // offset from edges of the map in pixels
+            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+            mMap.animateCamera(cu);
         }
     }
 
     public void onHideFavouritesClicked(MenuItem item){
-        if (favouritesMarkersList.isEmpty()){
-            //No favourites to hide
-        }
-        else{
-            for (Marker marker:favouritesMarkersList) {
-                marker.remove();
+        if (favouritesMarkersList != null) {
+            if (favouritesMarkersList.isEmpty()) {
+                //No favourites to hide
+            } else {
+                for (Marker marker : favouritesMarkersList) {
+                    marker.remove();
+                }
             }
         }
     }
 
     public void onEditFavouriteClicked(MenuItem item){
         Log.i("favs on edit", "" + favourites);
+        if (roomMarker != null){
+            roomMarker.remove();
+            roomMarker = null;
+        }
         favouritesMarkersList = new ArrayList<Marker>();
         mode = EDIT_MODE;
         editToolbar.setVisibility(View.VISIBLE);
         Iterator it = favourites.entrySet().iterator();
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry)it.next();
             Marker marker = mMap.addMarker(new MarkerOptions().position((LatLng) pair.getValue()).title((String) pair.getKey()));
             Log.i("pair", "key: " +pair.getKey().toString() + " value: " + pair.getValue().toString());
             Log.i("marker", ""+marker);
             favouritesMarkersList.add(marker);
+            builder.include(marker.getPosition());
         }
+        LatLngBounds bounds = builder.build();
+        int padding = 150; // offset from edges of the map in pixels
+        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+        mMap.animateCamera(cu);
         String data = "Choose marker to edit or press add button to add room to favourites";
         Toast.makeText(this, data, Toast.LENGTH_LONG).show();
     }
@@ -993,24 +1022,29 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         editToolbar.setVisibility(View.GONE);
         onMarkerClickRemove = false;
         mode = NORMAL_MODE;
+        onHideFavouritesClicked(item);
     }
 
     public void onDeleteClicked(MenuItem item){
         onMarkerClickRemove = true;
+        Log.i("markerToDelete", "" + markerToDelete);
         if (markerToDelete != null){
-            marker.remove();
-            favourites.remove(marker.getId());
-            favouritesMarkersList.remove(marker);
+            markerToDelete.remove();
+            favourites.remove(markerToDelete.getTitle());
+            favouritesMarkersList.remove(markerToDelete);
+            removeMarkerFromMemory(markerToDelete);
             markerToDelete = null;
         }
     }
 
     public void loadFavourites(){
+        Log.i("loading started", "...");
         Context context = this.getApplicationContext();
         favourites = new HashMap<String, LatLng>();
-        String filename = "favourites";
+        String filename = "favourites.txt";
         try{
             FileInputStream fis = context.openFileInput(filename);
+            Log.i("c", "" + openFileInput(filename).getChannel());
             InputStreamReader isr = new InputStreamReader(fis);
             BufferedReader bufferedReader = new BufferedReader(isr);
             StringBuilder sb = new StringBuilder();
@@ -1032,44 +1066,79 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         catch (FileNotFoundException e){
             e.printStackTrace();
         }
+        Log.i("markers loaded", "" + favourites);
     }
 
     public void saveToFavourites(Marker roomMarker){
+        Log.i("saving started", "...");
         Context context = this.getApplicationContext();
         String filename = "favourites.txt";
-        String content = roomMarker.getId() + " " + roomMarker.getPosition().latitude + " "
+        String content = roomMarker.getTitle() + " " + roomMarker.getPosition().latitude + " "
                 + roomMarker.getPosition().longitude + System.getProperty("line.separator");
-        File file = new File(context.getFilesDir(), filename);
         FileOutputStream outputStream;
         try {
-            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+            outputStream = openFileOutput(filename, Context.MODE_APPEND);
             outputStream.write(content.getBytes());
             outputStream.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        Log.i("saving finished", "!");
     }
 
     public void removeMarkerFromMemory(Marker marker){
-        File inputFile = new File("favourites.txt");
-        File tempFile = new File("myTempFile.txt");
+        Log.i("removing started", "...");
+        Context context = this.getApplicationContext();
+        String filename = "favourites.txt";
+        String tempFileName = "myTempFile.txt";
+        File inputFile = new File(filename);
+        File tempFile = new File(context.getFilesDir(), tempFileName);
+        String sb = "";
         boolean successful = false;
+        String lineToRemove = marker.getTitle() + " " + marker.getPosition().latitude + " "
+                + marker.getPosition().longitude;
+        FileOutputStream outputStream;
         try{
-            BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
-
-            String lineToRemove = "bbb";
+            FileInputStream fis = context.openFileInput(filename);
+            InputStreamReader isr = new InputStreamReader(fis);
+            BufferedReader reader = new BufferedReader(isr);
+            outputStream = openFileOutput(tempFileName, Context.MODE_PRIVATE);
             String currentLine;
-
+            Log.i("jass", "kjepp");
             while((currentLine = reader.readLine()) != null) {
                 // trim newline when comparing with lineToRemove
                 String trimmedLine = currentLine.trim();
-                if(trimmedLine.equals(lineToRemove)) continue;
-                writer.write(currentLine + System.getProperty("line.separator"));
+                Log.i("line", trimmedLine + " line to remove: " + lineToRemove);
+                if(trimmedLine.equals(lineToRemove)) {
+                    Log.i("found it", "removed");
+                    continue;
+                }
+                sb += currentLine + " ";
+                outputStream.write((currentLine + System.getProperty("line.separator")).getBytes());
             }
-            writer.close();
+            outputStream.close();
+            fis.close();
+            isr.close();
             reader.close();
-            successful = tempFile.renameTo(inputFile);
+            Log.i("sb", sb);
+            String[] string = sb.split(" ");
+            FileOutputStream os;
+            os = openFileOutput(filename, Context.MODE_PRIVATE);
+            String kuk = "";
+            Log.i("string", ""+Arrays.toString(string));
+            for (int i = 0; i < string.length; i++) {
+                kuk+= string[i] + " ";
+                Log.i("kuk", kuk);
+                Log.i("i", ""+i);
+                if (i%3 == 2){
+                    Log.i("rass", "rasshol");
+                    kuk+= "\n";
+                    os.write(kuk.getBytes());
+                    kuk = "";
+                }
+            }
+            os.close();
+            tempFile.renameTo(inputFile);
         }
         catch (Exception e){
             e.printStackTrace();
@@ -1084,18 +1153,38 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Toast.makeText(this, data,
                     Toast.LENGTH_LONG).show();
         }
+        loadFavourites();
 
     }
 
     @Override
     public boolean onMarkerClick(Marker marker) {
+        Log.i("marker", "clicked, mode:" + mode);
         if (mode == EDIT_MODE){
+            Log.i("marker", "marker to be delete placed");
             markerToDelete = marker;
         }
         else if (!onMarkerClickRemove && mode == EDIT_MODE){
 
         }
         return false;
+    }
+
+    public void deleteFile(){
+        String path = "/data/user/0/com.example.masommer.mapster/app_favourites.txt";
+        String filename = "favourites.txt";
+        try {
+            File f=new File(getFilesDir(), filename);
+            Log.i("path", ""+getDir(filename, Context.MODE_PRIVATE));
+            Log.i("file to delete", "" + f);
+            boolean delete = f.delete();
+            Log.i("deleted", ""+delete);
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        loadFavourites();
     }
 }
 
