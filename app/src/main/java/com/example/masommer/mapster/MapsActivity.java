@@ -794,15 +794,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         ListView lv = (ListView) popupView.findViewById(R.id.listView);
 
-        //add header
-        TextView list_title = new TextView(this);
-        list_title.setText(R.string.result_header);
-        list_title.setTextSize(20);
-        list_title.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-        list_title.setTextColor(getResources().getColor(R.color.primaryText,getTheme()));
-        list_title.setBackgroundColor(getResources().getColor(R.color.colorPrimary,getTheme()));
-        lv.addHeaderView(list_title);
-
         final PopupCursorAdapter pcAdapter = new PopupCursorAdapter(lv.getContext(), cursor);
         lv.setAdapter(pcAdapter);
 
