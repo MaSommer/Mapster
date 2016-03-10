@@ -5,40 +5,33 @@
 
     <item
         android:id="@+id/action_search"
-        android:orderInCategory="600"
+        android:orderInCategory="500"
         android:title="Search"
         app:actionViewClass="android.support.v7.widget.SearchView"
         android:icon="@android:drawable/ic_menu_search"
         app:showAsAction="always"/>
 
     <item
-        android:id="@+id/zoom_to_markers"
-        android:orderInCategory="500"
-        android:title="Zoom to your position and room"
-        android:icon="@android:drawable/ic_menu_view"
+        android:id="@+id/zoomToEye"
+        android:orderInCategory="300"
+        android:title="Zoom to pos and marker"
+        android:icon="@drawable/ic_eye_24dp"
         app:showAsAction="ifRoom"
         android:onClick="onZoomToMarkersClick"/>
 
     <item
-        android:id="@+id/direction_walk"
-        android:orderInCategory="400"
-        android:title="Walking Direction"
-        android:icon="@drawable/ic_walk"
-        app:showAsAction="ifRoom"
-        android:onClick="onDirectionWalkClick"/>
-    <item
-        android:id="@+id/direction_drive"
+        android:id="@+id/direction"
         android:orderInCategory="300"
         android:title="Driving Direction"
-        android:icon="@drawable/ic_action_driving"
+        android:icon="@drawable/ic_directions_24dp"
         app:showAsAction="ifRoom"
-        android:onClick="onDirectionDriveClick"/>
+        android:onClick="onDirectionsClicked"/>
 
     <item
         android:id="@+id/information"
         android:orderInCategory="200"
         android:title="Info"
-        android:icon="@drawable/ic_action_info1"
+        android:icon="@drawable/ic_info"
         app:showAsAction="always"
         android:onClick="onInfoClicked"/>
 
@@ -46,7 +39,7 @@
         android:id="@+id/favourites"
         android:orderInCategory="100"
         android:title="Favourites"
-        android:icon="@drawable/ic_action_favs"
+        android:icon="@drawable/ic_fav_24dp"
         app:showAsAction="always"
         android:onClick="onFavouritesClicked"/>
 </menu>

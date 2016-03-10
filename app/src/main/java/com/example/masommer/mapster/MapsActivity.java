@@ -1,9 +1,7 @@
 package com.example.masommer.mapster;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
-import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -19,15 +17,6 @@ import android.location.LocationManager;
 import android.app.SearchManager;
 
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.app.SearchManager;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.location.Criteria;
-import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
@@ -36,9 +25,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v4.widget.SimpleCursorAdapter;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
@@ -62,7 +48,6 @@ import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -79,29 +64,18 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-import org.json.JSONObject;
-
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.lang.reflect.Array;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 
@@ -681,6 +655,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void onDirectionWalkClick(MenuItem item) {
+        SearchView sv = (SearchView)findViewById(R.id.action_search);
+        sv.clearFocus();
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         if (newWalkingPolyline == null && roomMarker != null && (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
@@ -694,13 +670,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         } else if (newWalkingPolyline != null) {
             newWalkingPolyline.remove();
             newWalkingPolyline = null;
-        } else {
+        } else if (roomMarker == null){
+            String data = "No target are specified";
+            Toast.makeText(this, data,
+                    Toast.LENGTH_LONG).show();
             return;
         }
 
     }
 
     public void onDirectionDriveClick(MenuItem item) {
+        SearchView sv = (SearchView)findViewById(R.id.action_search);
+        sv.clearFocus();
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         if (newDrivingPolyline == null && roomMarker != null && (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
@@ -714,23 +695,40 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         } else if (newDrivingPolyline != null) {
             newDrivingPolyline.remove();
             newDrivingPolyline = null;
-        } else {
-            return;
-        }
+        } else if (roomMarker == null){
+        String data = "No target are specified";
+        Toast.makeText(this, data,
+                Toast.LENGTH_LONG).show();
+        return;
+    }
 
     }
 
     public void onInfoClicked(MenuItem item) {
+        SearchView sv = (SearchView)findViewById(R.id.action_search);
+        sv.clearFocus();
         fragmentUpWhenRotationChanged = true;
         fragment = new BlankFragment();
         fragment.show(getFragmentManager(), "Diag");
     }
 
     public void onFavouritesClicked(MenuItem item) {
+        SearchView sv = (SearchView)findViewById(R.id.action_search);
+        sv.clearFocus();
         View menuItemView = findViewById(R.id.favourites);
         PopupMenu popup = new PopupMenu(this, menuItemView);
         MenuInflater inflate = popup.getMenuInflater();
-        inflate.inflate(R.menu.popup, popup.getMenu());
+        inflate.inflate(R.menu.popup_favourites, popup.getMenu());
+        popup.show();
+    }
+
+    public void onDirectionsClicked(MenuItem item) {
+        SearchView sv = (SearchView)findViewById(R.id.action_search);
+        sv.clearFocus();
+        View menuItemView = findViewById(R.id.direction);
+        PopupMenu popup = new PopupMenu(this, menuItemView);
+        MenuInflater inflate = popup.getMenuInflater();
+        inflate.inflate(R.menu.popup_direction, popup.getMenu());
         popup.show();
     }
 
@@ -837,6 +835,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void zoomToRoom(LatLng latLng) {
+        if (newDrivingPolyline != null) {
+            newDrivingPolyline.remove();
+            newDrivingPolyline = null;
+        }
+        if (newWalkingPolyline != null) {
+            newWalkingPolyline.remove();
+            newWalkingPolyline = null;
+        }
         CameraPosition cp = new CameraPosition.Builder()
                 .target(latLng)
                 .zoom(19.9f)
@@ -936,6 +942,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void onAddFavouriteClicked(MenuItem item){
+        SearchView sv = (SearchView)findViewById(R.id.action_search);
+        sv.clearFocus();
         onMarkerClickRemove = false;
         if (roomMarker != null && !favourites.containsKey(roomMarker.getTitle())) {
             if (roomMarker != null) {
@@ -965,6 +973,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void onShowFavouritesClicked(MenuItem item){
+        SearchView sv = (SearchView)findViewById(R.id.action_search);
+        sv.clearFocus();
         favouritesMarkersList = new ArrayList<Marker>();
         if (favourites.isEmpty()){
             String data = "No favourites to show";
@@ -989,6 +999,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void onHideFavouritesClicked(MenuItem item){
+        SearchView sv = (SearchView)findViewById(R.id.action_search);
+        sv.clearFocus();
         if (favouritesMarkersList != null) {
             if (favouritesMarkersList.isEmpty()) {
                 //No favourites to hide
@@ -1001,6 +1013,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void onEditFavouriteClicked(MenuItem item){
+        SearchView sv = (SearchView)findViewById(R.id.action_search);
+        sv.clearFocus();
         Log.i("favs on edit", "" + favourites);
         if (roomMarker != null){
             roomMarker.remove();
@@ -1028,6 +1042,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void onArrowBackClicked(MenuItem item){
+        SearchView sv = (SearchView)findViewById(R.id.action_search);
+        sv.clearFocus();
         editToolbar.setVisibility(View.GONE);
         onMarkerClickRemove = false;
         mode = NORMAL_MODE;
@@ -1035,6 +1051,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void onDeleteClicked(MenuItem item){
+        SearchView sv = (SearchView)findViewById(R.id.action_search);
+        sv.clearFocus();
         onMarkerClickRemove = true;
         Log.i("markerToDelete", "" + markerToDelete);
         if (markerToDelete != null){
