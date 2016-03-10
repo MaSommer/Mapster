@@ -11,5 +11,6 @@
         - Press \"walk\" icon to see the walking direction in red color to the specified room.\n
         - Press \"drive\" icon to see the driving direction in blue color to the specified room. \n</string>
     <string name="result_header">Results</string>
+    <string name="edit_fav">Edit Favourites</string>
 
 </resources>
