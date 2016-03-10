@@ -220,8 +220,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         favouritesMarkersList = new ArrayList<Marker>();
 
 
-
-
     }
 
     protected void onNewIntent(Intent intent) {
@@ -246,7 +244,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Bundle args = new Bundle();
             Log.i("query", query);
             args.putString("QUERY", query);
-            getSupportLoaderManager().restartLoader(DATABASE_LOADER,args,this);
+            getSupportLoaderManager().restartLoader(DATABASE_LOADER, args, this);
             getSupportLoaderManager().initLoader(DATABASE_LOADER, args, this);
 //            Cursor cursor = db.getWordMatches(query, null);
 //
@@ -272,8 +270,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         double latitude = Double.parseDouble(c.getString(latIndex));
         double longitude = Double.parseDouble(c.getString(longIndex));
         String title = c.getString(idIndex);
-        LatLng roomPoint = new LatLng(latitude,longitude);
-        if (roomMarker != null){
+        LatLng roomPoint = new LatLng(latitude, longitude);
+        if (roomMarker != null) {
             roomMarker.remove();
         }
         roomMarker = mMap.addMarker(new MarkerOptions().position(roomPoint));
@@ -473,7 +471,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (currentCameraLongtitude != 0.0) {
             LatLng cameraPosition = new LatLng(currentCameraLatitude, currentCameraLongtitude);
             mMap.moveCamera(CameraUpdateFactory.newLatLng(cameraPosition));
-        }else{
+        } else {
             //Zoom in to UCSB campus
             CameraPosition cp = new CameraPosition.Builder()
                     .target(northHallPos)
@@ -490,7 +488,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");
         }
 
-        if(roomMarkerTitle != null){
+        if (roomMarkerTitle != null) {
             roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(roomMarkerLatitude, roomMarkerLongtitude)));
             roomMarker.setTitle(roomMarkerTitle);
         }
@@ -668,7 +666,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void onDirectionWalkClick(MenuItem item) {
-        SearchView sv = (SearchView)findViewById(R.id.action_search);
+        SearchView sv = (SearchView) findViewById(R.id.action_search);
         sv.clearFocus();
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         if (newWalkingPolyline == null && roomMarker != null && (ContextCompat.checkSelfPermission(this,
@@ -683,7 +681,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         } else if (newWalkingPolyline != null) {
             newWalkingPolyline.remove();
             newWalkingPolyline = null;
-        } else if (roomMarker == null){
+        } else if (roomMarker == null) {
             String data = "No target are specified";
             Toast.makeText(this, data,
                     Toast.LENGTH_LONG).show();
@@ -693,7 +691,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void onDirectionDriveClick(MenuItem item) {
-        SearchView sv = (SearchView)findViewById(R.id.action_search);
+        SearchView sv = (SearchView) findViewById(R.id.action_search);
         sv.clearFocus();
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         if (newDrivingPolyline == null && roomMarker != null && (ContextCompat.checkSelfPermission(this,
@@ -708,16 +706,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         } else if (newDrivingPolyline != null) {
             newDrivingPolyline.remove();
             newDrivingPolyline = null;
-        } else if (roomMarker == null){
-        String data = "No target are specified";
-        Toast.makeText(this, data,
-                Toast.LENGTH_LONG).show();
-    }
+        } else if (roomMarker == null) {
+            String data = "No target are specified";
+            Toast.makeText(this, data,
+                    Toast.LENGTH_LONG).show();
+        }
 
     }
 
     public void onInfoClicked(MenuItem item) {
-        SearchView sv = (SearchView)findViewById(R.id.action_search);
+        SearchView sv = (SearchView) findViewById(R.id.action_search);
         sv.clearFocus();
         fragmentUpWhenRotationChanged = true;
         fragment = new BlankFragment();
@@ -725,7 +723,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void onFavouritesClicked(MenuItem item) {
-        SearchView sv = (SearchView)findViewById(R.id.action_search);
+        SearchView sv = (SearchView) findViewById(R.id.action_search);
         sv.clearFocus();
         View menuItemView = findViewById(R.id.favourites);
         PopupMenu popup = new PopupMenu(this, menuItemView);
@@ -735,7 +733,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void onDirectionsClicked(MenuItem item) {
-        SearchView sv = (SearchView)findViewById(R.id.action_search);
+        SearchView sv = (SearchView) findViewById(R.id.action_search);
         sv.clearFocus();
         View menuItemView = findViewById(R.id.direction);
         PopupMenu popup = new PopupMenu(this, menuItemView);
@@ -768,7 +766,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         //Log.i("morro", data.getCount() + "");
-        SearchView sv = (SearchView)findViewById(R.id.action_search);
+        SearchView sv = (SearchView) findViewById(R.id.action_search);
         sv.clearFocus();
         showPopup(data);
     }
@@ -884,7 +882,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if(roomMarker!=null){
+                if (roomMarker != null) {
                     roomMarker.remove();
                 }
                 TextView tv = (TextView) view.findViewById(R.id.lvItem);
@@ -942,20 +940,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-    public void onShowFavouritesClicked(MenuItem item){
-        SearchView sv = (SearchView)findViewById(R.id.action_search);
+    public void onShowFavouritesClicked(MenuItem item) {
+        SearchView sv = (SearchView) findViewById(R.id.action_search);
         sv.clearFocus();
         favouritesMarkersList = new ArrayList<Marker>();
-        if (favourites.isEmpty()){
+        if (favourites.isEmpty()) {
             String data = "No favourites to show";
             Toast.makeText(this, data,
                     Toast.LENGTH_LONG).show();
-        }
-        else{
+        } else {
             LatLngBounds.Builder builder = new LatLngBounds.Builder();
             Iterator it = favourites.entrySet().iterator();
             while (it.hasNext()) {
-                Map.Entry pair = (Map.Entry)it.next();
+                Map.Entry pair = (Map.Entry) it.next();
                 Marker marker = mMap.addMarker(new MarkerOptions().position((LatLng) pair.getValue()).title((String) pair.getKey())
                         .icon(BitmapDescriptorFactory
                                 .defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
@@ -970,9 +967,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    public void onHideFavouritesClicked(MenuItem item){
-        SearchView sv = (SearchView)findViewById(R.id.action_search);
+    public void onHideFavouritesClicked(MenuItem item) {
+        SearchView sv = (SearchView) findViewById(R.id.action_search);
         sv.clearFocus();
+        Log.i("favs", "" + favouritesMarkersList);
         if (favouritesMarkersList != null) {
             if (favouritesMarkersList.isEmpty()) {
                 //No favourites to hide
@@ -984,15 +982,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    public void onEditFavouriteClicked(MenuItem item){
+    public void onEditFavouriteClicked(MenuItem item) {
         SearchView sv = (SearchView) findViewById(R.id.action_search);
         sv.clearFocus();
-        if (favourites.isEmpty()){
+        if (favourites.isEmpty()) {
             String data = "You have no favourites";
             Toast.makeText(this, data, Toast.LENGTH_LONG).show();
             return;
         }
-        if (roomMarker != null){
+        if (roomMarker != null) {
             roomMarker.remove();
         }
         Log.i("favs on edit", "" + favourites);
@@ -1001,13 +999,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (mActionMode != null) {
             return;
         }
-
+        favouritesMarkersList = new ArrayList<Marker>();
         // Start the CAB using the ActionMode.Callback defined above
         mActionMode = startActionMode(mActionModeCallback);
         Iterator it = favourites.entrySet().iterator();
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry)it.next();
+            Map.Entry pair = (Map.Entry) it.next();
             Marker marker = mMap.addMarker(new MarkerOptions().position((LatLng) pair.getValue()).title((String) pair.getKey())
                     .icon(BitmapDescriptorFactory
                             .defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
@@ -1023,8 +1021,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-    public void onArrowBackClicked(MenuItem item){
-        SearchView sv = (SearchView)findViewById(R.id.action_search);
+    public void onArrowBackClicked(MenuItem item) {
+        SearchView sv = (SearchView) findViewById(R.id.action_search);
         sv.clearFocus();
         editToolbar.setVisibility(View.GONE);
         onMarkerClickRemove = false;
@@ -1052,9 +1050,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //    }
 
 
-
-    public void onAddFavouriteClicked(MenuItem item){
-        SearchView sv = (SearchView)findViewById(R.id.action_search);
+    public void onAddFavouriteClicked(MenuItem item) {
+        SearchView sv = (SearchView) findViewById(R.id.action_search);
         sv.clearFocus();
         onMarkerClickRemove = false;
         if (roomMarker != null && !favourites.containsKey(roomMarker.getTitle())) {
@@ -1066,15 +1063,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Toast.makeText(this, data,
                         Toast.LENGTH_LONG).show();
             }
-        }
-        else if (roomMarker == null){
+        } else if (roomMarker == null) {
             String data = "You need to specify a room first!";
             Toast.makeText(this, data,
                     Toast.LENGTH_LONG).show();
             return;
-        }
-        else{
-            String data = "Your favourites already consist of the room "+roomMarker.getTitle();
+        } else {
+            String data = "Your favourites already consist of the room " + roomMarker.getTitle();
             Toast.makeText(this, data,
                     Toast.LENGTH_LONG).show();
             return;
@@ -1082,33 +1077,37 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.i("favs", "" + favourites);
     }
 
-    public void onDeleteClicked(MenuItem item){
-        SearchView sv = (SearchView)findViewById(R.id.action_search);
+    public void onDeleteClicked(MenuItem item) {
+        SearchView sv = (SearchView) findViewById(R.id.action_search);
         sv.clearFocus();
         onMarkerClickRemove = true;
-        Log.i("markerToDelete", "" + markerToDelete);
-        if (markerToDelete != null){
+        Log.i("markerToDelete", "" + markerToDelete.getTitle());
+        if (markerToDelete != null) {
             markerToDelete.remove();
+            Log.i("hei1", "sveis" + favouritesMarkersList.toString());
             favourites.remove(markerToDelete.getTitle());
+            Log.i("hei1", "favHashmap" + favourites.toString());
             favouritesMarkersList.remove(markerToDelete);
+            Log.i("markerToDelete", ""+markerToDelete.getTitle());
+            Log.i("hei1", "favArray" + favouritesMarkersList.toString());
             removeMarkerFromMemory(markerToDelete);
             markerToDelete = null;
         }
     }
 
-    public void loadFavourites(){
+    public void loadFavourites() {
         Log.i("loading started", "...");
         Context context = this.getApplicationContext();
         favourites = new HashMap<String, LatLng>();
         String filename = "favourites.txt";
-        try{
+        try {
             FileInputStream fis = context.openFileInput(filename);
             Log.i("c", "" + openFileInput(filename).getChannel());
             InputStreamReader isr = new InputStreamReader(fis);
             BufferedReader bufferedReader = new BufferedReader(isr);
             StringBuilder sb = new StringBuilder();
             String line;
-            try{
+            try {
                 while ((line = bufferedReader.readLine()) != null) {
                     line = line.trim();
                     Log.i("line", line);
@@ -1119,18 +1118,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     LatLng latLng = new LatLng(latitude, longtitude);
                     favourites.put(roomName, latLng);
                 }
-            }
-            catch (IOException e){
+            } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-        catch (FileNotFoundException e){
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
         Log.i("markers loaded", "" + favourites);
     }
 
-    public void saveToFavourites(Marker roomMarker){
+    public void saveToFavourites(Marker roomMarker) {
         Log.i("saving started", "...");
         Context context = this.getApplicationContext();
         String filename = "favourites.txt";
@@ -1147,7 +1144,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.i("saving finished", "!");
     }
 
-    public void removeMarkerFromMemory(Marker marker){
+    public void removeMarkerFromMemory(Marker marker) {
         Log.i("removing started", "...");
         Context context = this.getApplicationContext();
         String filename = "favourites.txt";
@@ -1159,18 +1156,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         String lineToRemove = marker.getTitle() + " " + marker.getPosition().latitude + " "
                 + marker.getPosition().longitude;
         FileOutputStream outputStream;
-        try{
+        try {
             FileInputStream fis = context.openFileInput(filename);
             InputStreamReader isr = new InputStreamReader(fis);
             BufferedReader reader = new BufferedReader(isr);
             outputStream = openFileOutput(tempFileName, Context.MODE_PRIVATE);
             String currentLine;
             Log.i("jass", "kjepp");
-            while((currentLine = reader.readLine()) != null) {
+            while ((currentLine = reader.readLine()) != null) {
                 // trim newline when comparing with lineToRemove
                 String trimmedLine = currentLine.trim();
                 Log.i("line", trimmedLine + " line to remove: " + lineToRemove);
-                if(trimmedLine.equals(lineToRemove)) {
+                if (trimmedLine.equals(lineToRemove)) {
                     Log.i("found it", "removed");
                     continue;
                 }
@@ -1186,27 +1183,25 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             FileOutputStream os;
             os = openFileOutput(filename, Context.MODE_PRIVATE);
             String kuk = "";
-            Log.i("string", ""+Arrays.toString(string));
+            Log.i("string", "" + Arrays.toString(string));
             for (int i = 0; i < string.length; i++) {
-                if (i%3 == 2){
-                    kuk+= string[i];
-                }
-                else{
-                    kuk+= string[i] + " ";
+                if (i % 3 == 2) {
+                    kuk += string[i];
+                } else {
+                    kuk += string[i] + " ";
                 }
                 Log.i("kuk", kuk);
-                Log.i("i", ""+i);
-                if (i%3 == 2){
+                Log.i("i", "" + i);
+                if (i % 3 == 2) {
                     Log.i("rass", "rasshol");
-                    kuk+= "\n";
+                    kuk += "\n";
                     os.write(kuk.getBytes());
                     kuk = "";
                 }
             }
             os.close();
             tempFile.renameTo(inputFile);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -1214,26 +1209,26 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public boolean onMarkerClick(Marker marker) {
         Log.i("marker", "clicked, mode:" + mode);
-        if (mode == EDIT_MODE){
+        if (mode == EDIT_MODE) {
             Log.i("marker", "marker to be delete placed");
+
             markerToDelete = marker;
         }
 
         return false;
     }
 
-    public void deleteFile(){
+    public void deleteFile() {
         String path = "/data/user/0/com.example.masommer.mapster/app_favourites.txt";
         String filename = "favourites.txt";
         try {
-            File f=new File(getFilesDir(), filename);
-            Log.i("path", ""+getDir(filename, Context.MODE_PRIVATE));
+            File f = new File(getFilesDir(), filename);
+            Log.i("path", "" + getDir(filename, Context.MODE_PRIVATE));
             Log.i("file to delete", "" + f);
             boolean delete = f.delete();
-            Log.i("deleted", ""+delete);
+            Log.i("deleted", "" + delete);
 
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         loadFavourites();
@@ -1262,6 +1257,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Log.i("markerToDelete", "" + markerToDelete);
                     if (markerToDelete != null) {
                         markerToDelete.remove();
+                        Log.i("hei1", "rass");
+
                         favourites.remove(markerToDelete.getTitle());
                         favouritesMarkersList.remove(markerToDelete);
                         removeMarkerFromMemory(markerToDelete);
@@ -1284,10 +1281,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             }
             mActionMode = null;
-            if(roomMarker!=null){
+            if (roomMarker != null) {
                 roomMarker = mMap.addMarker(new MarkerOptions().position(roomMarker.getPosition()));
             }
         }
     };
+
 }
 
