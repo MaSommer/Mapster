@@ -986,7 +986,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Iterator it = favourites.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry pair = (Map.Entry)it.next();
-                Marker marker = mMap.addMarker(new MarkerOptions().position((LatLng) pair.getValue()).title((String) pair.getKey()));
+                Marker marker = mMap.addMarker(new MarkerOptions().position((LatLng) pair.getValue())
+                        .icon(BitmapDescriptorFactory
+                                .defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
                 favouritesMarkersList.add(marker);
                 builder.include(marker.getPosition());
 
@@ -1027,7 +1029,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry)it.next();
-            Marker marker = mMap.addMarker(new MarkerOptions().position((LatLng) pair.getValue()).title((String) pair.getKey()));
+            Marker marker = mMap.addMarker(new MarkerOptions().position((LatLng) pair.getValue())
+                    .icon(BitmapDescriptorFactory
+                            .defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
             Log.i("pair", "key: " +pair.getKey().toString() + " value: " + pair.getValue().toString());
             Log.i("marker", ""+marker);
             favouritesMarkersList.add(marker);
@@ -1170,18 +1174,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         catch (Exception e){
             e.printStackTrace();
         }
-        if (successful){
-            String data = "Marker successfully removed from memory";
-            Toast.makeText(this, data,
-                    Toast.LENGTH_LONG).show();
-        }
-        else{
-            String data = "Marker failed to remove from memory";
-            Toast.makeText(this, data,
-                    Toast.LENGTH_LONG).show();
-        }
-        loadFavourites();
-
     }
 
     @Override
