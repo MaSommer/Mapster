@@ -144,7 +144,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Marker markerToDelete;
 
     private ActionMode mActionMode;
-
+    private String roomMarkerTitle;
 
 
     @Override
@@ -460,13 +460,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .position(southHallPos, 133f, 143f);
         mMap.addGroundOverlay(sh_newark);
 
-        //Zoom in to UCSB campus
-        CameraPosition cp = new CameraPosition.Builder()
-                .target(northHallPos)
-                .zoom(16)
-                .build();
-        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cp));
-        mMap.setOnMarkerClickListener(this);
         //for testing
         //roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.41447398728048, -119.8470713943243)));
 
@@ -480,13 +473,26 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (currentCameraLongtitude != 0.0) {
             LatLng cameraPosition = new LatLng(currentCameraLatitude, currentCameraLongtitude);
             mMap.moveCamera(CameraUpdateFactory.newLatLng(cameraPosition));
+        }else{
+            //Zoom in to UCSB campus
+            CameraPosition cp = new CameraPosition.Builder()
+                    .target(northHallPos)
+                    .zoom(16)
+                    .build();
+            googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(cp));
         }
+        mMap.setOnMarkerClickListener(this);
         //roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.415370973562936, -119.84701473265886)));
         if (latitudeList != null) {
             Location location = mMap.getMyLocation();
             LatLng currentPos = new LatLng(currentPositionLatitude, currentPositionLongtitude);
             LatLng targetPos = new LatLng(roomMarker.getPosition().latitude, roomMarker.getPosition().longitude);
             findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");
+        }
+
+        if(roomMarkerTitle != null){
+            roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(roomMarkerLatitude, roomMarkerLongtitude)));
+            roomMarker.setTitle(roomMarkerTitle);
         }
         //marker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.415370973562936, -119.84701473265886)));
         //createBuildingList();
@@ -516,7 +522,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-        searchView.setSubmitButtonEnabled(true);
+        searchView.setSubmitButtonEnabled(false);
 
         return super.onCreateOptionsMenu(menu);
     }
@@ -706,7 +712,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         String data = "No target are specified";
         Toast.makeText(this, data,
                 Toast.LENGTH_LONG).show();
-        return;
     }
 
     }
@@ -776,6 +781,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+        outState.putString("roomMarkerTitle", roomMarker.getTitle());
         outState.putDouble("roomMarkerLongtitude", roomMarkerLongtitude);
         outState.putDouble("roomMarkerLatitude", roomMarkerLatitude);
         outState.putDouble("currentCameraLongtitude", currentCameraLongtitude);
@@ -791,6 +797,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
+        roomMarkerTitle = savedInstanceState.getString("roomMarkerTitle");
         roomMarkerLongtitude = savedInstanceState.getDouble("roomMarkerLongtitude");
         roomMarkerLatitude = savedInstanceState.getDouble("roomMarkerLatitude");
         currentCameraLatitude = savedInstanceState.getDouble("currentCameraLatitude");
@@ -877,9 +884,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //LinearLayout lin = (LinearLayout) view;
-                //TODO fix layout, remove shortest path if existing
-                roomMarker.remove();
+                if(roomMarker!=null){
+                    roomMarker.remove();
+                }
                 TextView tv = (TextView) view.findViewById(R.id.lvItem);
                 String building = "" + tv.getText();
                 String latitude = (String) tv.getTag(R.string.lat_tag);
@@ -891,11 +898,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
         popupWindow.showAtLocation(findViewById(R.id.map_layout), Gravity.CENTER, 0, 0);
-        //popupWindow.showAsDropDown(findViewById(R.id.action_search),0,20, Gravity.CENTER_HORIZONTAL);
-        /*
-        http://stackoverflow.com/questions/18461990/pop-up-window-to-display-some-stuff-in-a-fragment
-        https://guides.codepath.com/android/Populating-a-ListView-with-a-CursorAdapter#attaching-the-adapter-to-a-listview
-        */
     }
 
 
@@ -1275,6 +1277,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         @Override
+<<<<<<< HEAD
         public void onDestroyActionMode(ActionMode mode1) {
             mode = NORMAL_MODE;
             mActionMode = null;
@@ -1286,6 +1289,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         marker.remove();
                     }
                 }
+=======
+        public void onDestroyActionMode(ActionMode mode) {
+            if (favouritesMarkersList != null) {
+                if (favouritesMarkersList.isEmpty()) {
+                    //No favourites to hide
+                } else {
+                    for (Marker marker : favouritesMarkersList) {
+                        marker.remove();
+                    }
+                }
+            }
+            mActionMode = null;
+            if(roomMarker!=null){
+                roomMarker = mMap.addMarker(new MarkerOptions().position(roomMarker.getPosition()));
+>>>>>>> master
             }
         }
     };
