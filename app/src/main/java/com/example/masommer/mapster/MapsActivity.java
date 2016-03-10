@@ -937,36 +937,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         client.disconnect();
     }
 
-    public void onAddFavouriteClicked(MenuItem item){
-        SearchView sv = (SearchView)findViewById(R.id.action_search);
-        sv.clearFocus();
-        onMarkerClickRemove = false;
-        if (roomMarker != null && !favourites.containsKey(roomMarker.getTitle())) {
-            if (roomMarker != null) {
-                Log.i("this room has", ""+roomMarker.getTitle());
-                favourites.put(roomMarker.getTitle(), roomMarker.getPosition());
-                saveToFavourites(roomMarker);
-                String data = roomMarker.getTitle() + " is added to favourites";
-                Toast.makeText(this, data,
-                        Toast.LENGTH_LONG).show();
-                roomMarker.remove();
-                roomMarker = null;
-            }
-        }
-        else if (roomMarker == null){
-            String data = "You need to specify a room first!";
-            Toast.makeText(this, data,
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
-        else{
-            String data = "Your favourites already consist of the room "+roomMarker.getTitle();
-            Toast.makeText(this, data,
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
-        Log.i("favs", "" + favourites);
-    }
 
     public void onShowFavouritesClicked(MenuItem item){
         SearchView sv = (SearchView)findViewById(R.id.action_search);
@@ -1053,6 +1023,51 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //    }
 
 
+
+    public void onAddFavouriteClicked(MenuItem item){
+        SearchView sv = (SearchView)findViewById(R.id.action_search);
+        sv.clearFocus();
+        onMarkerClickRemove = false;
+        if (roomMarker != null && !favourites.containsKey(roomMarker.getTitle())) {
+            if (roomMarker != null) {
+                Log.i("this room has", ""+roomMarker.getTitle());
+                favourites.put(roomMarker.getTitle(), roomMarker.getPosition());
+                saveToFavourites(roomMarker);
+                String data = roomMarker.getTitle() + " is added to favourites";
+                Toast.makeText(this, data,
+                        Toast.LENGTH_LONG).show();
+                roomMarker.remove();
+                roomMarker = null;
+            }
+        }
+        else if (roomMarker == null){
+            String data = "You need to specify a room first!";
+            Toast.makeText(this, data,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        else{
+            String data = "Your favourites already consist of the room "+roomMarker.getTitle();
+            Toast.makeText(this, data,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        Log.i("favs", "" + favourites);
+    }
+
+    public void onDeleteClicked(MenuItem item){
+        SearchView sv = (SearchView)findViewById(R.id.action_search);
+        sv.clearFocus();
+        onMarkerClickRemove = true;
+        Log.i("markerToDelete", "" + markerToDelete);
+        if (markerToDelete != null){
+            markerToDelete.remove();
+            favourites.remove(markerToDelete.getTitle());
+            favouritesMarkersList.remove(markerToDelete);
+            removeMarkerFromMemory(markerToDelete);
+            markerToDelete = null;
+        }
+    }
 
     public void loadFavourites(){
         Log.i("loading started", "...");
@@ -1160,18 +1175,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         catch (Exception e){
             e.printStackTrace();
         }
-        if (successful){
-            String data = "Marker successfully removed from memory";
-            Toast.makeText(this, data,
-                    Toast.LENGTH_LONG).show();
-        }
-        else{
-            String data = "Marker failed to remove from memory";
-            Toast.makeText(this, data,
-                    Toast.LENGTH_LONG).show();
-        }
-        loadFavourites();
-
     }
 
     @Override
