@@ -432,9 +432,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
         mMap = googleMap;
-        mMap.setBuildingsEnabled(false);
+        mMap.getUiSettings().setRotateGesturesEnabled(false);
         mMap.setOnMapClickListener(this);
-        //Add north hall to map
+        //Ad    d north hall to map
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.raw.north_hall_v3);
@@ -448,6 +448,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .image(bs)
                 .position(northHallPos, 131f, 99f);
         mMap.addGroundOverlay(newarkMap);
+
+        Bitmap phelps = BitmapFactory.decodeResource(getResources(), R.raw.phelps);
+        BitmapDescriptor phelps_bs = BitmapDescriptorFactory.fromBitmap(phelps);
+        Log.i("bs", "" + phelps_bs);
+        LatLng phelpsPos = new LatLng(34.416163805390714, -119.8443453662777);
+        GroundOverlayOptions phelps_opts = new GroundOverlayOptions()
+                .image(phelps_bs)
+                .position(phelpsPos, 146f, 130f);
+        mMap.addGroundOverlay(phelps_opts);
 
 
         Bitmap kerr = BitmapFactory.decodeResource(getResources(), R.raw.kerr_hall);
@@ -748,7 +757,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        Log.i("morro", data.getCount() + "");
+        //Log.i("morro", data.getCount() + "");
         SearchView sv = (SearchView)findViewById(R.id.action_search);
         sv.clearFocus();
         showPopup(data);
