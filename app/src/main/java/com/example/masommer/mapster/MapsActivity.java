@@ -1020,7 +1020,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Toast.makeText(this, data, Toast.LENGTH_LONG).show();
     }
 
-<<<<<<< HEAD
+
     public void onArrowBackClicked(MenuItem item){
         SearchView sv = (SearchView)findViewById(R.id.action_search);
         sv.clearFocus();
@@ -1030,6 +1030,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         onHideFavouritesClicked(item);
         roomMarker = mMap.addMarker(new MarkerOptions().position(roomMarker.getPosition()));
     }
+//    public void onArrowBackClicked(MenuItem item){
+//        SearchView sv = (SearchView)findViewById(R.id.action_search);
+//        sv.clearFocus();
+//        editToolbar.setVisibility(View.GONE);
+//        onMarkerClickRemove = false;
+//        mode = NORMAL_MODE;
+//        onHideFavouritesClicked(item);
+//    }
+
 
 //    public void onArrowBackClicked(MenuItem item){
 //        SearchView sv = (SearchView)findViewById(R.id.action_search);
