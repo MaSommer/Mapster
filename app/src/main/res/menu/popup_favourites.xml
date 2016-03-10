@@ -18,7 +18,8 @@
         android:id="@+id/edit_favourites"
         app:showAsAction="ifRoom"
         android:onClick="onEditFavouriteClicked"
-        android:title="Edit favourites"/>
+        android:title="Edit favourites"
+        />
 
     <item
         android:id="@+id/hide_favourites"
