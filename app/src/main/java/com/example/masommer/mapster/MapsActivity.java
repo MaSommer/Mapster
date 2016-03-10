@@ -700,7 +700,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        Log.i("morro", data.getCount() + "");
+        //Log.i("morro", data.getCount() + "");
         SearchView sv = (SearchView)findViewById(R.id.action_search);
         sv.clearFocus();
         showPopup(data);
