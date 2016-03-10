@@ -858,15 +858,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         ListView lv = (ListView) popupView.findViewById(R.id.listView);
 
-        //add header
-        TextView list_title = new TextView(this);
-        list_title.setText(R.string.result_header);
-        list_title.setTextSize(20);
-        list_title.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-        list_title.setTextColor(getResources().getColor(R.color.primaryText,getTheme()));
-        list_title.setBackgroundColor(getResources().getColor(R.color.colorPrimary,getTheme()));
-        lv.addHeaderView(list_title);
-
         final PopupCursorAdapter pcAdapter = new PopupCursorAdapter(lv.getContext(), cursor);
         lv.setAdapter(pcAdapter);
 
@@ -941,36 +932,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         client.disconnect();
     }
 
-    public void onAddFavouriteClicked(MenuItem item){
-        SearchView sv = (SearchView)findViewById(R.id.action_search);
-        sv.clearFocus();
-        onMarkerClickRemove = false;
-        if (roomMarker != null && !favourites.containsKey(roomMarker.getTitle())) {
-            if (roomMarker != null) {
-                Log.i("this room has", ""+roomMarker.getTitle());
-                favourites.put(roomMarker.getTitle(), roomMarker.getPosition());
-                saveToFavourites(roomMarker);
-                String data = roomMarker.getTitle() + " is added to favourites";
-                Toast.makeText(this, data,
-                        Toast.LENGTH_LONG).show();
-                roomMarker.remove();
-                roomMarker = null;
-            }
-        }
-        else if (roomMarker == null){
-            String data = "You need to specify a room first!";
-            Toast.makeText(this, data,
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
-        else{
-            String data = "Your favourites already consist of the room "+roomMarker.getTitle();
-            Toast.makeText(this, data,
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
-        Log.i("favs", "" + favourites);
-    }
 
     public void onShowFavouritesClicked(MenuItem item){
         SearchView sv = (SearchView)findViewById(R.id.action_search);
@@ -986,9 +947,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Iterator it = favourites.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry pair = (Map.Entry)it.next();
-                Marker marker = mMap.addMarker(new MarkerOptions().position((LatLng) pair.getValue())
-                        .icon(BitmapDescriptorFactory
-                                .defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+                Marker marker = mMap.addMarker(new MarkerOptions().position((LatLng) pair.getValue()).title((String) pair.getKey()));
                 favouritesMarkersList.add(marker);
                 builder.include(marker.getPosition());
 
@@ -1029,9 +988,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry)it.next();
-            Marker marker = mMap.addMarker(new MarkerOptions().position((LatLng) pair.getValue())
-                    .icon(BitmapDescriptorFactory
-                            .defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+            Marker marker = mMap.addMarker(new MarkerOptions().position((LatLng) pair.getValue()).title((String) pair.getKey()));
             Log.i("pair", "key: " +pair.getKey().toString() + " value: " + pair.getValue().toString());
             Log.i("marker", ""+marker);
             favouritesMarkersList.add(marker);
@@ -1052,6 +1009,38 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         onMarkerClickRemove = false;
         mode = NORMAL_MODE;
         onHideFavouritesClicked(item);
+    }
+
+
+    public void onAddFavouriteClicked(MenuItem item){
+        SearchView sv = (SearchView)findViewById(R.id.action_search);
+        sv.clearFocus();
+        onMarkerClickRemove = false;
+        if (roomMarker != null && !favourites.containsKey(roomMarker.getTitle())) {
+            if (roomMarker != null) {
+                Log.i("this room has", ""+roomMarker.getTitle());
+                favourites.put(roomMarker.getTitle(), roomMarker.getPosition());
+                saveToFavourites(roomMarker);
+                String data = roomMarker.getTitle() + " is added to favourites";
+                Toast.makeText(this, data,
+                        Toast.LENGTH_LONG).show();
+                roomMarker.remove();
+                roomMarker = null;
+            }
+        }
+        else if (roomMarker == null){
+            String data = "You need to specify a room first!";
+            Toast.makeText(this, data,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        else{
+            String data = "Your favourites already consist of the room "+roomMarker.getTitle();
+            Toast.makeText(this, data,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        Log.i("favs", "" + favourites);
     }
 
     public void onDeleteClicked(MenuItem item){
