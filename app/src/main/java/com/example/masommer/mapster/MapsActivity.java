@@ -29,6 +29,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.ActionMode;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -106,6 +107,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private HashMap<String, LatLng> favourites;
     private ArrayList<Marker> favouritesMarkersList;
 
+
     private String directionMode;
     private int favNr;
 
@@ -140,6 +142,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleApiClient client;
     private Toolbar editToolbar;
     private Marker markerToDelete;
+
+    private ActionMode mActionMode;
+
 
 
     @Override
@@ -883,7 +888,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 popupWindow.dismiss();
             }
         });
-        popupWindow.showAtLocation(findViewById(R.id.map_layout),Gravity.CENTER,0,0);
+        popupWindow.showAtLocation(findViewById(R.id.map_layout), Gravity.CENTER, 0, 0);
         //popupWindow.showAsDropDown(findViewById(R.id.action_search),0,20, Gravity.CENTER_HORIZONTAL);
         /*
         http://stackoverflow.com/questions/18461990/pop-up-window-to-display-some-stuff-in-a-fragment
@@ -1013,7 +1018,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         favouritesMarkersList = new ArrayList<Marker>();
         mode = EDIT_MODE;
-        editToolbar.setVisibility(View.VISIBLE);
+        //editToolbar.setVisibility(View.VISIBLE);
+        if (mActionMode != null) {
+            return;
+        }
+
+        // Start the CAB using the ActionMode.Callback defined above
+        mActionMode = startActionMode(mActionModeCallback);
         Iterator it = favourites.entrySet().iterator();
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         while (it.hasNext()) {
@@ -1028,32 +1039,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         int padding = 150; // offset from edges of the map in pixels
         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
         mMap.animateCamera(cu);
-        String data = "Choose marker to edit or press add button to add room to favourites";
+        String data = "Choose marker to edit...";
         Toast.makeText(this, data, Toast.LENGTH_LONG).show();
     }
 
-    public void onArrowBackClicked(MenuItem item){
-        SearchView sv = (SearchView)findViewById(R.id.action_search);
-        sv.clearFocus();
-        editToolbar.setVisibility(View.GONE);
-        onMarkerClickRemove = false;
-        mode = NORMAL_MODE;
-        onHideFavouritesClicked(item);
-    }
+//    public void onArrowBackClicked(MenuItem item){
+//        SearchView sv = (SearchView)findViewById(R.id.action_search);
+//        sv.clearFocus();
+//        editToolbar.setVisibility(View.GONE);
+//        onMarkerClickRemove = false;
+//        mode = NORMAL_MODE;
+//        onHideFavouritesClicked(item);
+//    }
 
-    public void onDeleteClicked(MenuItem item){
-        SearchView sv = (SearchView)findViewById(R.id.action_search);
-        sv.clearFocus();
-        onMarkerClickRemove = true;
-        Log.i("markerToDelete", "" + markerToDelete);
-        if (markerToDelete != null){
-            markerToDelete.remove();
-            favourites.remove(markerToDelete.getTitle());
-            favouritesMarkersList.remove(markerToDelete);
-            removeMarkerFromMemory(markerToDelete);
-            markerToDelete = null;
-        }
-    }
+
 
     public void loadFavourites(){
         Log.i("loading started", "...");
@@ -1182,9 +1181,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Log.i("marker", "marker to be delete placed");
             markerToDelete = marker;
         }
-        else if (!onMarkerClickRemove && mode == EDIT_MODE){
 
-        }
         return false;
     }
 
@@ -1204,5 +1201,44 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         loadFavourites();
     }
+
+    private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
+
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            MenuInflater inflater = mode.getMenuInflater();
+            inflater.inflate(R.menu.edit_favourites, menu);
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.delete:
+                    SearchView sv = (SearchView) findViewById(R.id.action_search);
+                    sv.clearFocus();
+                    Log.i("markerToDelete", "" + markerToDelete);
+                    if (markerToDelete != null) {
+                        markerToDelete.remove();
+                        favourites.remove(markerToDelete.getTitle());
+                        favouritesMarkersList.remove(markerToDelete);
+                        removeMarkerFromMemory(markerToDelete);
+                        markerToDelete = null;
+                    }
+                default:
+                    return true;
+            }
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            mActionMode = null;
+        }
+    };
 }
 
