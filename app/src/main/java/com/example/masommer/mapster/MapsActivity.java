@@ -132,6 +132,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private boolean fragmentUpWhenRotationChanged;
 
     private DatabaseTable db;
+    private android.location.LocationListener locationListener;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -162,6 +164,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     android.R.layout.simple_list_item_1,
                     listItems);
             listView.setAdapter(adapter);
+        }
+        locationListener = new android.location.LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {}
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {}
+            @Override
+            public void onProviderEnabled(String provider) {}
+            @Override
+            public void onProviderDisabled(String provider) {}
+        };
+        try{
+            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 4, locationListener);
+
+        }
+        catch (SecurityException sec){
+            sec.printStackTrace();
         }
         fragmentManager = getSupportFragmentManager();
         fragmentTransaction = fragmentManager.beginTransaction();
@@ -272,6 +291,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 =======
 =======
 >>>>>>> Martin
+>>>>>>> master
 /*    private void showResults(String query) {
 
         CursorLoader cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
@@ -286,9 +306,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Cursor cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
 >>>>>>> master
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
 >>>>>>> Martin
 =======
 >>>>>>> Martin
+>>>>>>> master
                 new String[]{query}, null);
         if (cursor == null) {
             // There are no results
@@ -812,6 +835,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         https://guides.codepath.com/android/Populating-a-ListView-with-a-CursorAdapter#attaching-the-adapter-to-a-listview
         */
     }
+
+
 
 
 }
