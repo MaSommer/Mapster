@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">Mapster</string>
-    <string name="title_activity_maps">Mapster</string>
+    <string name="app_name">GetARoom</string>
+    <string name="title_activity_maps">GetARoom</string>
     <string name="search_hint">Search building in room number</string>
     <string name="lat_tag">LATITUDE</string>
     <string name="long_tag">LONGITUDE</string>
@@ -11,5 +11,6 @@
         - Press \"walk\" icon to see the walking direction in red color to the specified room.\n
         - Press \"drive\" icon to see the driving direction in blue color to the specified room. \n</string>
     <string name="result_header">Results</string>
+    <string name="edit_fav">Edit Favourites</string>
 
 </resources>

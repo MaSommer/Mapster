@@ -12,33 +12,34 @@
         app:showAsAction="always"/>
 
     <item
-        android:id="@+id/zoom_to_markers"
-        android:orderInCategory="400"
-        android:title="zoom"
-        android:icon="@android:drawable/ic_menu_view"
+        android:id="@+id/zoomToEye"
+        android:orderInCategory="300"
+        android:title="Zoom to pos and marker"
+        android:icon="@drawable/ic_eye_24dp"
         app:showAsAction="ifRoom"
         android:onClick="onZoomToMarkersClick"/>
 
     <item
-        android:id="@+id/direction_walk"
+        android:id="@+id/direction"
         android:orderInCategory="300"
-        android:title="direction"
-        android:icon="@drawable/ic_walk"
+        android:title="Driving Direction"
+        android:icon="@drawable/ic_directions_24dp"
         app:showAsAction="ifRoom"
-        android:onClick="onDirectionWalkClick"/>
-    <item
-        android:id="@+id/direction_drive"
-        android:orderInCategory="200"
-        android:title="direction"
-        android:icon="@drawable/ic_action_driving"
-        app:showAsAction="ifRoom"
-        android:onClick="onDirectionDriveClick"/>
+        android:onClick="onDirectionsClicked"/>
 
     <item
         android:id="@+id/information"
-        android:orderInCategory="100"
-        android:title="direction"
-        android:icon="@drawable/ic_action_info1"
+        android:orderInCategory="200"
+        android:title="Info"
+        android:icon="@drawable/ic_info"
         app:showAsAction="always"
         android:onClick="onInfoClicked"/>
+
+    <item
+        android:id="@+id/favourites"
+        android:orderInCategory="100"
+        android:title="Favourites"
+        android:icon="@drawable/ic_fav_24dp"
+        app:showAsAction="always"
+        android:onClick="onFavouritesClicked"/>
 </menu>

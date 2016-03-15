@@ -1,16 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    >
+    android:layout_height="match_parent">
+
+
+
 
     <ListView
         android:background="@color/primaryText"
         android:layout_width="330dp"
         android:layout_height="360dp"
-        android:layout_marginTop="100dp"
         android:descendantFocusability="blocksDescendants"
+        android:paddingTop="35dp"
         android:id="@+id/listView"
-        android:layout_gravity="center_horizontal" />
-</LinearLayout>
+        android:layout_gravity="center" />
+
+    <TextView
+        android:id="@+id/results_header"
+        android:layout_width="330dp"
+        android:layout_height="35dp"
+        android:background="@color/colorPrimary"
+        android:text="Results"
+        android:textSize="20sp"
+        android:textAlignment="center"
+        android:layout_alignParentTop="true"
+        android:textColor="@color/primaryText"
+        android:gravity="center_horizontal"/>
+
+</RelativeLayout>

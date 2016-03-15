@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/add_favourite"
+        app:showAsAction="ifRoom"
+        android:onClick="onAddFavouriteClicked"
+        android:title="Add room to favourites"/>
+
+    <item
+        android:id="@+id/show_favourites"
+        app:showAsAction="ifRoom"
+        android:onClick="onShowFavouritesClicked"
+        android:title="Show your favourites"/>
+
+    <item
+        android:id="@+id/edit_favourites"
+        app:showAsAction="ifRoom"
+        android:onClick="onEditFavouriteClicked"
+        android:title="Edit favourites"
+        />
+
+    <item
+        android:id="@+id/hide_favourites"
+        app:showAsAction="ifRoom"
+        android:onClick="onHideFavouritesClicked"
+        android:title="Hide favourites"/>
+
+</menu>
