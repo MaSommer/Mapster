@@ -157,9 +157,13 @@ public class DatabaseTable extends ListActivity{
                     //String[] strings = TextUtils.split(line, " ");
                     String[] strings = line.split("\\s+");
                     //if (strings.length < 3) continue;
-                    long id = addLocation(strings[0].trim(), strings[1].trim(), strings[2].trim());
-                    if (id < 0) {
-                        Log.e(TAG, "unable to add location: " + strings[0].trim());
+                    try{
+                        long id = addLocation(strings[0].trim(), strings[1].trim(), strings[2].trim());
+                        if (id < 0) {
+                            Log.e(TAG, "unable to add location: " + strings[0].trim());
+                        }
+                    }catch(Exception e){
+                        Log.e("Database", "Unable to load location: "+e);
                     }
                 }
             } finally {
