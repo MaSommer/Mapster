@@ -36,10 +36,10 @@
         android:onClick="onInfoClicked"/>
 
     <item
-        android:id="@+id/favourites"
+        android:id="@+id/favorites"
         android:orderInCategory="100"
-        android:title="Favourites"
+        android:title="Favorites"
         android:icon="@drawable/ic_fav_24dp"
-        app:showAsAction="always"
+        app:showAsAction="ifRoom"
         android:onClick="onFavouritesClicked"/>
 </menu>
