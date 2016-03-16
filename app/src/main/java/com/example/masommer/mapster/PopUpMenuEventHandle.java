@@ -18,7 +18,7 @@ public class PopUpMenuEventHandle implements PopupMenu.OnMenuItemClickListener {
     @Override
     public boolean onMenuItemClick(MenuItem item) {
 
-        if (item.getItemId()==R.id.favourites){
+        if (item.getItemId()==R.id.favorites){
 
             Toast.makeText(context,"login is user",Toast.LENGTH_SHORT).show();
         }

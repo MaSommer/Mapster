@@ -1,16 +1,23 @@
 <resources>
     <string name="app_name">GetARoom</string>
     <string name="title_activity_maps">GetARoom</string>
-    <string name="search_hint">Search building in room number</string>
+    <string name="search_hint">Search for room...</string>
     <string name="lat_tag">LATITUDE</string>
     <string name="long_tag">LONGITUDE</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="fragment_info_message">- Press \"search\" icon to search after rooms on campus (Eks.: "KERR1110").\n
-        - Press \"eye\" icon to see the location of your self and the specified room you searched after.\n
-        - Press \"walk\" icon to see the walking direction in red color to the specified room.\n
-        - Press \"drive\" icon to see the driving direction in blue color to the specified room. \n</string>
+    <string name="fragment_info_message">-\tPress the \"search\" icon to search after rooms on campus (eg. "KERR1110"). To instantly
+        select a room, press any suggestion from the dropdown list. To view a list of results, hit the enter key.\n\n
+        - Press the \"eye\" icon to zoom to a view showing both you and your target room in the same frame.\n\n
+        - Press the \"directions\" icon followed by either \"walking\" or \"driving\" from the drop down list to see
+        a visual path from your location to the target room. Repeat the choice to hide the path.\n\n
+        - Press the \"star\" icon to see options for managing favorites. \n\n
+        - Select \"Add room to favorites\" to add the currently targeted room to your list of favorite rooms.\n\n
+        - Select \"Show/hide favorites\" to toggle a visual representation of your favorite rooms.\n\n
+        - Select \"Edit favorites\" to enter edit mode, where rooms can be deleted from the favorite list. To delete a room,
+        tap the room marker and then hit the \"trash can\" icon.\n\n
+        - To leave editing mode, press the \"back\" arrow in the top left corner.\n\n\n</string>
     <string name="result_header">Results</string>
-    <string name="edit_fav">Edit Favourites</string>
-
+    <string name="edit_fav">Edit Favorites</string>
+    <string name="show_favorites">Show Favorites</string>
+    <string name="hide_favorites">Hide Favorites</string>
 </resources>
