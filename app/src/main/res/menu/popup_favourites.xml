@@ -9,10 +9,10 @@
         android:title="Add room to favourites"/>
 
     <item
-        android:id="@+id/show_favourites"
+        android:id="@+id/toggle_favorites"
         app:showAsAction="ifRoom"
-        android:onClick="onShowFavouritesClicked"
-        android:title="Show your favourites"/>
+        android:onClick="onToggleFavouritesClicked"
+        android:title="@string/show_favorites"/>
 
     <item
         android:id="@+id/edit_favourites"
@@ -21,10 +21,5 @@
         android:title="Edit favourites"
         />
 
-    <item
-        android:id="@+id/hide_favourites"
-        app:showAsAction="ifRoom"
-        android:onClick="onHideFavouritesClicked"
-        android:title="Hide favourites"/>
 
 </menu>

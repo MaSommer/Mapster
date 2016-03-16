@@ -6,15 +6,37 @@
     android:minWidth="250dp"
     tools:context="com.example.masommer.mapster.BlankFragment">
 
-    <!-- TODO: Update blank fragment layout -->
     <TextView
+        android:id="@+id/info_header"
+        android:layout_width="match_parent"
+        android:layout_height="35dp"
+        android:background="@color/colorPrimary"
+        android:text="Information"
+        android:textSize="20sp"
+        android:textAlignment="center"
+        android:textColor="@color/primaryText"
+        android:gravity="center_horizontal"/>
+
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center|top"
-        android:textSize="24dp"
-        android:layout_marginTop="40dp"
-        android:layout_margin="15dp"
-        android:text="@string/fragment_info_message" />
+        android:scrollbars="vertical"
+        android:paddingBottom="70dp"
+        android:paddingTop="35dp"
+        >
+
+        <TextView
+            android:id="@+id/info_text"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center|top"
+            android:textSize="18sp"
+            android:layout_marginTop="40dp"
+            android:layout_margin="15dp"
+            android:text="@string/fragment_info_message"
+            />
+    </ScrollView>
+
 
     <Button
         android:layout_width="151dp"
