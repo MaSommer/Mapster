@@ -81,6 +81,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap mMap;
     private final int MY_PERMISSION_LOCATION_ACCESS = 1;
     private final int DATABASE_LOADER = 0;
+    private final int SUGG_DATABASE_LOADER = 1;
     private Marker roomMarker;
     private LocationManager lm;
     private Polyline newWalkingPolyline;
@@ -137,6 +138,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private boolean walkingVisible;
     private boolean drivingVisible;
+    private boolean searchWhileFavShow;
 
 
     @Override
@@ -229,11 +231,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void handleIntent(Intent intent) {
-
+        //hideFavoritesClicked();
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             // handles a click on a search suggestion; launches activity to show word
+            //roomFromSuggestion(uri);
             Uri uri = intent.getData();
-            roomFromSuggestion(uri);
+            Bundle args = new Bundle();
+            args.putParcelable("URI", uri);
+            getSupportLoaderManager().restartLoader(SUGG_DATABASE_LOADER, args, this);
+            getSupportLoaderManager().initLoader(SUGG_DATABASE_LOADER, args, this);
 
         } else if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             // handles a search query
@@ -252,8 +258,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         sv.onActionViewCollapsed();
     }
 
-    private void roomFromSuggestion(Uri uri) {
-        Cursor c = managedQuery(uri, null, null, null, null);
+    private void roomFromSuggestion(Cursor c) {
         c.moveToFirst();
         int idIndex = c.getColumnIndexOrThrow(DatabaseTable.COL_ROOM);
         int latIndex = c.getColumnIndexOrThrow(DatabaseTable.COL_LAT);
@@ -594,9 +599,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        String[] qry = {args.getString("QUERY")};
         switch (id) {
             case DATABASE_LOADER:
+                String[] qry = {args.getString("QUERY")};
                 // Returns a new CursorLoader
                 return new android.support.v4.content.CursorLoader(
                         getApplicationContext(),   // Parent activity context
@@ -604,6 +609,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         null,
                         null,     // Projection to return
                         qry,            // No selection arguments
+                        null             // Default sort order
+                );
+            case SUGG_DATABASE_LOADER:
+                Uri uri = args.getParcelable("URI");
+                return new android.support.v4.content.CursorLoader(
+                        getApplicationContext(),   // Parent activity context
+                        uri,
+                        null,
+                        null,     // Projection to return
+                        null,            // No selection arguments
                         null             // Default sort order
                 );
             default:
@@ -614,10 +629,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        SearchView sv = (SearchView) findViewById(R.id.action_search);
-        sv.clearFocus();
-        iconifySearchView();
-        showPopup(data);
+        int cursorID = loader.getId();
+        if(favoritesVisible){
+            searchWhileFavShow=true;
+        }else{
+            searchWhileFavShow=false;
+        }
+        switch (cursorID){
+            case DATABASE_LOADER:
+                SearchView sv = (SearchView) findViewById(R.id.action_search);
+                sv.clearFocus();
+                iconifySearchView();
+                showPopup(data);
+                return;
+            case SUGG_DATABASE_LOADER:
+                roomFromSuggestion(data);
+        }
     }
 
 
@@ -739,13 +766,25 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onResume();
         if(mMap!=null){
             if(roomMarker!=null){
-                MarkerOptions roomOpts = new MarkerOptions().position(roomMarker.getPosition());
+                MarkerOptions roomOpts = new MarkerOptions().position(roomMarker.getPosition()).title(roomMarker.getTitle());
                 roomMarker.remove();
+                roomMarker=null;
                 roomMarker = mMap.addMarker(roomOpts);
             }
-            if(favoritesVisible){
+            if(favoritesVisible||mode == EDIT_MODE){
+                Log.i("onresume", "happened");
+                hideFavoritesClicked();
+                favouritesMarkersList.clear();
                 buildMarkersFromFavoriteList(); //markers must be rebuilt or else they will not draw after onPause
                 showFavoritesClicked();
+                if(roomMarker!=null){
+                    if(!favouritesMarkersList.containsKey(roomMarker.getTitle()) && searchWhileFavShow && mode!=EDIT_MODE){
+                        roomMarker.setVisible(true);
+                    }
+                }
+            }
+            if(mode==EDIT_MODE){
+                onEditFavouriteClicked(null);
             }
             if(drivingVisible){
                 PolylineOptions polyOpts = new PolylineOptions().width(8).color(Color.BLUE);
@@ -795,10 +834,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (newDrivingPolyline != null) {
             newDrivingPolyline.remove();
             newDrivingPolyline = null;
+            drivingVisible=false;
         }
         if (newWalkingPolyline != null) {
             newWalkingPolyline.remove();
             newWalkingPolyline = null;
+            walkingVisible=false;
         }
         CameraPosition cp = new CameraPosition.Builder()
                 .target(latLng)
@@ -1135,9 +1176,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        editMenu.findItem(R.id.deleteFake).setVisible(false);
-        editMenu.findItem(R.id.delete).setVisible(true);
-        markerToDelete = marker;
+        if(mode==EDIT_MODE){
+            editMenu.findItem(R.id.deleteFake).setVisible(false);
+            editMenu.findItem(R.id.delete).setVisible(true);
+            markerToDelete = marker;
+        }
 
         return false;
     }
