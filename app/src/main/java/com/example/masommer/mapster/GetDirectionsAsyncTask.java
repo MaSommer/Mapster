@@ -11,9 +11,6 @@ import org.w3c.dom.Document;
 import java.util.ArrayList;
 import java.util.Map;
 
-/**
- * Created by MaSommer on 07.03.16.
- */
 public class GetDirectionsAsyncTask extends AsyncTask<Map<String, String>, Object, ArrayList> {
 
     public static final String USER_CURRENT_LAT = "user_current_lat";
