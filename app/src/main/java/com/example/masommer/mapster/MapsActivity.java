@@ -571,6 +571,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
         if(setupMap){
             setupMapFirstTime(googleMap);
         }else{
@@ -1571,7 +1572,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mActionMode = startActionMode(mActionModeCallback);
     }
 
-    public void onArrowBackClicked(MenuItem item) {
+    /*public void onArrowBackClicked(MenuItem item) {
         SearchView sv = (SearchView) findViewById(R.id.action_search);
         sv.clearFocus();
         editToolbar.setVisibility(View.GONE);
@@ -1579,7 +1580,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mode = NORMAL_MODE;
         onHideFavouritesClicked(item);
         roomMarker = mMap.addMarker(new MarkerOptions().position(roomMarker.getPosition()).title(roomMarker.getTitle()));
-    }
+    }*/
 
 //    public void onArrowBackClicked(MenuItem item) {
 //        SearchView sv = (SearchView) findViewById(R.id.action_search);
