@@ -319,11 +319,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-<<<<<<< HEAD
         mMap = googleMap;
-=======
-        mMap=googleMap;
->>>>>>> master
         if(setupMap){
             setupMapFirstTime(googleMap);
         }
@@ -1044,30 +1040,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         mActionMode = startActionMode(mActionModeCallback);
     }
-
-<<<<<<< HEAD
-    /*public void onArrowBackClicked(MenuItem item) {
-        SearchView sv = (SearchView) findViewById(R.id.action_search);
-        sv.clearFocus();
-        editToolbar.setVisibility(View.GONE);
-        onMarkerClickRemove = false;
-        mode = NORMAL_MODE;
-        onHideFavouritesClicked(item);
-        roomMarker = mMap.addMarker(new MarkerOptions().position(roomMarker.getPosition()).title(roomMarker.getTitle()));
-    }*/
-
-//    public void onArrowBackClicked(MenuItem item) {
-//        SearchView sv = (SearchView) findViewById(R.id.action_search);
-//        sv.clearFocus();
-//        editToolbar.setVisibility(View.GONE);
-//        onMarkerClickRemove = false;
-//        mode = NORMAL_MODE;
-//        onHideFavouritesClicked(item);
-//        roomMarker = mMap.addMarker(new MarkerOptions().position(roomMarker.getPosition()));
-//    }
-
-=======
->>>>>>> master
 
     public void buildMarkersFromFavoriteList(){
         for (Object o : favourites.entrySet()) {
