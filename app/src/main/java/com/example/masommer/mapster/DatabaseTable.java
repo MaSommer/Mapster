@@ -92,8 +92,6 @@ public class DatabaseTable extends ListActivity{
                 SearchManager.SUGGEST_COLUMN_INTENT_DATA_ID);
         map.put(SearchManager.SUGGEST_COLUMN_INTENT_DATA, "rowid AS "+
                 SearchManager.SUGGEST_COLUMN_INTENT_DATA);
-        //map.put(SearchManager.SUGGEST_COLUMN_SHORTCUT_ID, "rowid AS " +
-        //       SearchManager.SUGGEST_COLUMN_SHORTCUT_ID);
         return map;
     }
 
@@ -154,9 +152,7 @@ public class DatabaseTable extends ListActivity{
             try {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    //String[] strings = TextUtils.split(line, " ");
                     String[] strings = line.split("\\s+");
-                    //if (strings.length < 3) continue;
                     try{
                         long id = addLocation(strings[0].trim(), strings[1].trim(), strings[2].trim());
                         if (id < 0) {

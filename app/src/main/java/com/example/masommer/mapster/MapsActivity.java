@@ -9,11 +9,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 
@@ -21,11 +17,8 @@ import android.app.SearchManager;
 
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.NetworkOnMainThreadException;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
@@ -70,7 +63,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -78,13 +70,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.security.Permission;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -96,16 +84,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private final int DATABASE_LOADER = 0;
     private Marker roomMarker;
     private LocationManager lm;
-    private String provider;
-    private Marker marker;
     private boolean landscape;
     private Polyline newWalkingPolyline;
     private Polyline newDrivingPolyline;
-    private Polyline newPolyline;
     private BlankFragment fragment;
     private FragmentManager fragmentManager;
-    private FragmentTransaction fragmentTransaction;
-    private ArrayList directionPoints;
     private SharedPreferences prefs = null;
 
     private final int EDIT_MODE = 0;
@@ -119,23 +102,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
     private String directionMode;
-    private int favNr;
 
-    private boolean onMarkerClickRemove;
 
     private boolean setupMap;
     private Menu mMenu;
     private Menu editMenu;
     private ListView listView;
-    private ArrayList<Building> buildingList = new ArrayList<Building>();
-    private ArrayList<LatLng> markerPoints = new ArrayList<LatLng>();
     private ArrayList<String> listItems = new ArrayList<String>();
     private ArrayAdapter<String> adapter;
 
     private double currentCameraLongtitude;
     private double currentCameraLatitude;
-    private double currentPositionLongtitude;
-    private double currentPositionLatitude;
     private double roomMarkerLongtitude;
     private double roomMarkerLatitude;
 
@@ -152,12 +129,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private boolean fragmentUpWhenRotationChanged;
 
-    private DatabaseTable db;
     private android.location.LocationListener locationListener;
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
     private GoogleApiClient client;
     private Toolbar editToolbar;
     private Marker markerToDelete;
@@ -165,7 +137,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private ActionMode mActionMode;
     private String roomMarkerTitle;
 
-    private boolean permissionAccessLocation;
 
     private boolean walkingVisible;
     private boolean drivingVisible;
@@ -186,18 +157,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             fragment = new BlankFragment();
             fragment.show(getFragmentManager(), "Diag");
         }
-        boolean permission = checkAccessFineLocation();
-        db = new DatabaseTable(this);
         lm = (LocationManager) getSystemService(LOCATION_SERVICE);
-        // Creating a criteria object to retrieve provider
-        Criteria criteria = new Criteria();
-        // Getting the name of the best provider
-        provider = lm.getBestProvider(criteria, true);
 
         setContentView(R.layout.activity_maps);
-
-
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -247,27 +209,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         } catch (SecurityException sec) {
             sec.printStackTrace();
         }
-        //fragmentManager = getSupportFragmentManager();
-        //fragmentTransaction = fragmentManager.beginTransaction();
 
         fragmentManager = getSupportFragmentManager();
-        fragmentTransaction = fragmentManager.beginTransaction();
         prefs = getSharedPreferences("com.mycompany.myAppName", MODE_PRIVATE);
         if (prefs.getBoolean("firstrun", true)) {
-            // Do first run stuff here then set 'firstrun' as false
-            // using the following line to edit/commit prefs
             fragment = new BlankFragment();
             fragment.show(getFragmentManager(), "Diag");
-            prefs.edit().putBoolean("firstrun", false).commit();
+            prefs.edit().putBoolean("firstrun", false).apply();
         }
 
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
-        onMarkerClickRemove = false;
         Log.i("i am her", "looser");
-        //deleteFile();
-        //mode = NORMAL_MODE;
         editToolbar = (Toolbar) findViewById(R.id.toolbar);
         editToolbar.setVisibility(View.GONE);
         editToolbar.setTitleTextColor(Color.WHITE);
@@ -283,20 +235,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     protected void onNewIntent(Intent intent) {
         handleIntent(intent);
-        //System.out.print("tried to search!");
     }
 
     private void handleIntent(Intent intent) {
 
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             // handles a click on a search suggestion; launches activity to show word
-            //System.out.print("HEIIIII");
-            //String path = intent.getStringExtra(SearchManager.SUGGEST_COLUMN_INTENT_DATA_ID);
-            //Log.i("path", intent.getData().getPath());
             Uri uri = intent.getData();
             roomFromSuggestion(uri);
 
-//            Toast.makeText(getApplicationContext(), "VOILA!", Toast.LENGTH_LONG).show();
         } else if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             // handles a search query
             String query = intent.getStringExtra(SearchManager.QUERY);
@@ -305,27 +252,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             args.putString("QUERY", query);
             getSupportLoaderManager().restartLoader(DATABASE_LOADER, args, this);
             getSupportLoaderManager().initLoader(DATABASE_LOADER, args, this);
-//            Cursor cursor = db.getWordMatches(query, null);
-//
-//            ArrayList<String> result = new ArrayList<>();
-//            for(cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-//                // The Cursor is now set to the right position
-//                result.add(cursor.getString(0));
-//            }
-//            new_intent.putExtra("RESULT", result);
-//            MapsActivity.this.startActivity(intent);
-            //String query = intent.getStringExtra(SearchManager.QUERY);
-            //showResults(query);
         }
         iconifySearchView();
     }
 
     private void iconifySearchView(){
-        //if(mSearchView!=null){
         SearchView sv = (SearchView) mMenu.findItem(R.id.action_search).getActionView();
         sv.onActionViewCollapsed();
-
-        //}
     }
 
     private void roomFromSuggestion(Uri uri) {
@@ -376,207 +309,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(cp));
         }
         mMap.setOnMarkerClickListener(this);
-        //roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.415370973562936, -119.84701473265886)));
-        if (latitudeList != null) {
-            Location location = mMap.getMyLocation();
-            LatLng currentPos = new LatLng(currentPositionLatitude, currentPositionLongtitude);
-            LatLng targetPos = new LatLng(roomMarker.getPosition().latitude, roomMarker.getPosition().longitude);
-            findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");
-        }
-
-        if (roomMarkerTitle != null) {
-            roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(roomMarkerLatitude, roomMarkerLongtitude)));
-            roomMarker.setTitle(roomMarkerTitle);
-        }
-
+        enableOverlays();
         mMap.setBuildingsEnabled(false);
     }
 
 
-//    private void showResults(String query) {
-//
-//        Cursor cursor = new CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
-//                new String[]{query}, null);
-//        if (cursor == null) {
-//            // There are no results
-//            //mTextView.setText(getString(R.string.no_results, new Object[]{query}));
-//        } else {
-//            // Display the number of results
-//            int count = cursor.getCount();
-//            //String countString = getResources().getQuantityString(R.plurals.search_results,
-//            //        count, new Object[] {count, query});
-//            //mTextView.setText(countString);
-//            Toast.makeText(MapsActivity.this, "WOW: You found "+count+" results!", Toast.LENGTH_SHORT).show();
-//            // Specify the columns we want to display in the result
-////            String[] from = new String[] { DictionaryDatabase.KEY_WORD,
-////                    DictionaryDatabase.KEY_DEFINITION };
-////
-////            // Specify the corresponding layout elements where we want the columns to go
-////            int[] to = new int[] { R.id.word,
-////                    R.id.definition };
-////
-////            // Create a simple cursor adapter for the definitions and apply them to the ListView
-////            SimpleCursorAdapter words = new SimpleCursorAdapter(this,
-////                    R.layout.result, cursor, from, to);
-////            mListView.setAdapter(words);
-////
-////            // Define the on-click listener for the list items
-////            mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-////
-////                @Override
-////                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-////                    // Build the Intent used to open WordActivity with a specific word Uri
-////                    Intent wordIntent = new Intent(getApplicationContext(), WordActivity.class);
-////                    Uri data = Uri.withAppendedPath(DictionaryProvider.CONTENT_URI,
-////                            String.valueOf(id));
-////                    wordIntent.setData(data);
-////                    startActivity(wordIntent);
-////                }
-////            });
-//        }
-//    }
-    /*private void showResults(String query) {
-
-        Cursor cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
-=======
-=======
->>>>>>> Martin
->>>>>>> master
-/*    private void showResults(String query) {
-
-        CursorLoader cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
-=======
-    /*private void showResults(String query) {
-
-        Cursor cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
->>>>>>> master
-=======
-    /*private void showResults(String query) {
-
-        Cursor cursor = new android.support.v4.content.CursorLoader(getApplicationContext(),DatabaseProvider.CONTENT_URI, null, null,
->>>>>>> master
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> Martin
-=======
->>>>>>> Martin
->>>>>>> master
-                new String[]{query}, null);
-        if (cursor == null) {
-            // There are no results
-            //mTextView.setText(getString(R.string.no_results, new Object[]{query}));
-        } else {
-            // Display the number of results
-            int count = cursor.getCount();
-            //String countString = getResources().getQuantityString(R.plurals.search_results,
-            //        count, new Object[] {count, query});
-            //mTextView.setText(countString);
-            Toast.makeText(MapsActivity.this, "WOW: You found "+count+" results!", Toast.LENGTH_SHORT).show();
-            // Specify the columns we want to display in the result
-//            String[] from = new String[] { DictionaryDatabase.KEY_WORD,
-//                    DictionaryDatabase.KEY_DEFINITION };
-//
-//            // Specify the corresponding layout elements where we want the columns to go
-//            int[] to = new int[] { R.id.word,
-//                    R.id.definition };
-//
-//            // Create a simple cursor adapter for the definitions and apply them to the ListView
-//            SimpleCursorAdapter words = new SimpleCursorAdapter(this,
-//                    R.layout.result, cursor, from, to);
-//            mListView.setAdapter(words);
-//
-//            // Define the on-click listener for the list items
-//            mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//
-//                @Override
-//                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                    // Build the Intent used to open WordActivity with a specific word Uri
-//                    Intent wordIntent = new Intent(getApplicationContext(), WordActivity.class);
-//                    Uri data = Uri.withAppendedPath(DictionaryProvider.CONTENT_URI,
-//                            String.valueOf(id));
-//                    wordIntent.setData(data);
-//                    startActivity(wordIntent);
-//                }
-//            });
-        }
-    }*/
-
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
 
 
-//    @Override
-//    public void onMapReady(GoogleMap googleMap) {
-//        mMap = googleMap;
-//        mMap.getUiSettings().setRotateGesturesEnabled(false);
-//        mMap.setOnMapClickListener(this);
-//        //Ad    d north hall to map
-//
-//        enableOverlays();
-//
-//        //for testing
-//        //roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.41447398728048, -119.8470713943243)));
-//
-//        //Set my location
-//        try {
-//            mMap.setMyLocationEnabled(true);
-//
-//        } catch (SecurityException e) {
-//            e.printStackTrace();
-//        }
-//        if (currentCameraLongtitude != 0.0) {
-//            LatLng cameraPosition = new LatLng(currentCameraLatitude, currentCameraLongtitude);
-//            mMap.moveCamera(CameraUpdateFactory.newLatLng(cameraPosition));
-//        }else{
-//            //Zoom in to UCSB campus
-//            CameraPosition cp = new CameraPosition.Builder()
-//                    .target(new LatLng(34.415135360789565, -119.84668038419226))
-//                    .zoom(16)
-//                    .build();
-//            googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(cp));
-//        }
-//        mMap.setOnMarkerClickListener(this);
-//        //roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.415370973562936, -119.84701473265886)));
-//        if (latitudeList != null) {
-//            Location location = mMap.getMyLocation();
-//            LatLng currentPos = new LatLng(currentPositionLatitude, currentPositionLongtitude);
-//            LatLng targetPos = new LatLng(roomMarker.getPosition().latitude, roomMarker.getPosition().longitude);
-//            findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");
-//        }
-//
-//        if(roomMarkerTitle != null){
-//            roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(roomMarkerLatitude, roomMarkerLongtitude)));
-//            roomMarker.setTitle(roomMarkerTitle);
-//        }
-//
-//        prefs = getSharedPreferences("GetARoom", MODE_PRIVATE);
-//        if (prefs.getBoolean("firstrun", true)) {
-//            // Do first run stuff here then set 'firstrun' as false
-//            // using the following line to edit/commit prefs
-//            fragment = new BlankFragment();
-//            fragment.show(getFragmentManager(), "Diag");
-//            prefs.edit().putBoolean("firstrun", false).apply();
-//        }
-//
-//        mMap.setBuildingsEnabled(false);
-//    }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+<<<<<<< HEAD
         mMap = googleMap;
+=======
+        mMap=googleMap;
+>>>>>>> master
         if(setupMap){
             setupMapFirstTime(googleMap);
-        }else{
-            //mMap = googleMap;
-            //mMap.setOnMarkerClickListener(this);
         }
         buildMarkersFromFavoriteList();
 
@@ -661,83 +410,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .image(sh_bs)
                 .position(southHallPos, 133f, 143f);
         mMap.addGroundOverlay(sh_newark);
-
-//        //for testing
-//        //roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.41447398728048, -119.8470713943243)));
-//
-//        //Set my location
-//        try {
-//            mMap.setMyLocationEnabled(true);
-//
-//        } catch (SecurityException e) {
-//            e.printStackTrace();
-//        }
-//        if (currentCameraLongtitude != 0.0) {
-//            LatLng cameraPosition = new LatLng(currentCameraLatitude, currentCameraLongtitude);
-//            mMap.moveCamera(CameraUpdateFactory.newLatLng(cameraPosition));
-//        } else {
-//            //Zoom in to UCSB campus
-//            CameraPosition cp = new CameraPosition.Builder()
-//                    .target(northHallPos)
-//                    .zoom(16)
-//                    .build();
-//            mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cp));
-//        }
-//        mMap.setOnMarkerClickListener(this);
-//        //roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.415370973562936, -119.84701473265886)));
-//        if (latitudeList != null) {
-//            Location location = mMap.getMyLocation();
-//            LatLng currentPos = new LatLng(currentPositionLatitude, currentPositionLongtitude);
-//            LatLng targetPos = new LatLng(roomMarker.getPosition().latitude, roomMarker.getPosition().longitude);
-//            findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");
-//        }
-//
-//        if (roomMarkerTitle != null) {
-//            roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(roomMarkerLatitude, roomMarkerLongtitude)));
-//            roomMarker.setTitle(roomMarkerTitle);
-//        }
-//
-//        mMap.setBuildingsEnabled(false);
-        //for testing
-        //roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.41447398728048, -119.8470713943243)));
-
-        //Set my location
-//        boolean permission = checkAccessFineLocation();
-//        if (permission){
-//            try {
-//                mMap.setMyLocationEnabled(true);
-//                lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 4, locationListener);
-//
-//            } catch (SecurityException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        if (currentCameraLongtitude != 0.0) {
-//            LatLng cameraPosition = new LatLng(currentCameraLatitude, currentCameraLongtitude);
-//            mMap.moveCamera(CameraUpdateFactory.newLatLng(cameraPosition));
-//        } else {
-//            //Zoom in to UCSB campus
-//            CameraPosition cp = new CameraPosition.Builder()
-//                    .target(northHallPos)
-//                    .zoom(16)
-//                    .build();
-//            googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(cp));
-//        }
-//        mMap.setOnMarkerClickListener(this);
-//        //roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.415370973562936, -119.84701473265886)));
-//        if (latitudeList != null) {
-//            Location location = mMap.getMyLocation();
-//            LatLng currentPos = new LatLng(currentPositionLatitude, currentPositionLongtitude);
-//            LatLng targetPos = new LatLng(roomMarker.getPosition().latitude, roomMarker.getPosition().longitude);
-//            findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");
-//        }
-//
-//        if (roomMarkerTitle != null) {
-//            roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(roomMarkerLatitude, roomMarkerLongtitude)));
-//            roomMarker.setTitle(roomMarkerTitle);
-//        }
-//
-//        mMap.setBuildingsEnabled(false);
     }
 
     @Override
@@ -746,21 +418,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapClick(LatLng var1) {
-        //marker.remove();
-        Context context = getApplicationContext();
-        markerPoints.add(var1);
-        //marker = mMap.addMarker(new MarkerOptions().position(var1));
-        String s = "";
-        for (LatLng latLng : markerPoints) {
-            s += latLng.latitude + " " + latLng.longitude + "\n";
-        }
-        Log.i("string", s);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_search, menu);
-        //getMenuInflater().inflate(R.menu.edit_favourites, menu);
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         SearchView mSearchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
         mSearchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName())); //.getActionView()
@@ -775,65 +437,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    public void createBuildingList() {
-        File sdcard = Environment.getExternalStorageDirectory();
-
-        File file = new File(sdcard, "file.txt");
-
-        StringBuilder text = new StringBuilder();
-        InputStream is;
-
-        try {
-            InputStream inputStream = getResources().openRawResource(R.raw.room_and_buildings);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-            String line;
-            boolean createNewBuilding = true;
-            Building building = new Building("luring");
-            while ((line = reader.readLine()) != null) {
-                String[] output;
-                output = line.split(" ");
-                if (createNewBuilding) {
-                    building = new Building(output[0]);
-                    createNewBuilding = false;
-                }
-                Log.i("Line", "" + output);
-                if (line.equals("STOP")) {
-                    createNewBuilding = true;
-                    buildingList.add(building);
-                } else {
-                    double latitude = Double.parseDouble(output[2]);
-                    double longtitude = Double.parseDouble(output[3]);
-                    LatLng latLng = new LatLng(latitude, longtitude);
-                    Room room = new Room(output[0], output[1], latLng);
-                    building.addRoom(room);
-                }
-
-
-            }
-            reader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-            //You'll need to add proper error handling here
-        }
-
-    }
-
-    public void placeMarkers() {
-        for (Building building : buildingList) {
-            Log.i("building", "" + building);
-            Iterator it = building.getBuilding().entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry pair = (Map.Entry) it.next();
-                Log.i("key", "" + pair.getKey());
-                Log.i("value", "" + pair.getValue());
-                LatLng pos = (LatLng) pair.getValue();
-                Log.i("pos", "" + pos);
-                Log.i("map", "" + mMap);
-                mMap.addMarker(new MarkerOptions().position(pos));
-                it.remove(); // avoids a ConcurrentModificationException
-            }
-        }
-    }
 
 
     public void findDirections(double fromPositionDoubleLat, double fromPositionDoubleLong, double toPositionDoubleLat, double toPositionDoubleLong, String mode) {
@@ -888,11 +491,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void onZoomToMarkersClick(MenuItem item) {
-        /*if (landscape){
-            listView.setVisibility(View.VISIBLE);
-            listItems.add("NH1111 : ");
-            adapter.notifyDataSetChanged();
-        }*/
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         if (roomMarker != null && ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
@@ -913,15 +511,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onDirectionWalkClick(MenuItem item) {
         SearchView sv = (SearchView) findViewById(R.id.action_search);
         sv.clearFocus();
-        LatLngBounds.Builder builder = new LatLngBounds.Builder();
         if (newWalkingPolyline == null && roomMarker != null && (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED)) {
             Location location = mMap.getMyLocation();
             LatLng currentPos = new LatLng(location.getLatitude(), location.getLongitude());
             LatLng targetPos = roomMarker.getPosition();
-            currentPositionLongtitude = currentPos.longitude;
-            currentPositionLatitude = currentPos.latitude;
             findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");
             walkingVisible = true;
         } else if (newWalkingPolyline != null) {
@@ -932,7 +527,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             String data = "No target room specified.";
             Toast.makeText(this, data,
                     Toast.LENGTH_LONG).show();
-            return;
         }
 
     }
@@ -940,15 +534,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onDirectionDriveClick(MenuItem item) {
         SearchView sv = (SearchView) findViewById(R.id.action_search);
         sv.clearFocus();
-        LatLngBounds.Builder builder = new LatLngBounds.Builder();
         if (newDrivingPolyline == null && roomMarker != null && (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED)) {
             Location location = mMap.getMyLocation();
             LatLng currentPos = new LatLng(location.getLatitude(), location.getLongitude());
             LatLng targetPos = new LatLng(roomMarker.getPosition().latitude, roomMarker.getPosition().longitude);
-            currentPositionLongtitude = currentPos.longitude;
-            currentPositionLatitude = currentPos.latitude;
             findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "driving");
             drivingVisible = true;
         } else if (newDrivingPolyline != null) {
@@ -956,9 +547,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             newDrivingPolyline = null;
             drivingVisible = false;
         } else if (roomMarker == null){
-        String data = "No target room specified.";
-        Toast.makeText(this, data,
-                Toast.LENGTH_LONG).show();
+            String data = "No target room specified.";
+            Toast.makeText(this, data,
+                    Toast.LENGTH_LONG).show();
         }
 
     }
@@ -1036,7 +627,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        //Log.i("morro", data.getCount() + "");
         SearchView sv = (SearchView) findViewById(R.id.action_search);
         sv.clearFocus();
         iconifySearchView();
@@ -1091,9 +681,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if(mode == EDIT_MODE){
             outState.putBoolean("edit_mode", true);
         }
-        if(favoritesVisible){
-            outState.putBoolean("favoritesVisible", true);
-        }
+        outState.putBoolean("favoritesVisible", favoritesVisible);
+        outState.putBoolean("drivingVisible",drivingVisible);
+        outState.putBoolean("walkingVisible",walkingVisible);
         clearMarkers();
 
 
@@ -1117,15 +707,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if(edit_mode){
             mode = EDIT_MODE;
             onEditFavouriteClicked(null);
-//            boolean favsExist = enterFavEditMode();
-//            if(favsExist){
-//            showFavoritesClicked();
-//            startActionMode(mActionModeCallback);
-//            }
         }else if(favoritesVisible){
             showFavoritesClicked();
         }
 
+        drivingVisible = savedInstanceState.getBoolean("drivingVisible",false);
+        walkingVisible= savedInstanceState.getBoolean("walkingVisible", walkingVisible);
 
         fragmentUpWhenRotationChanged = savedInstanceState.getBoolean("fragmentUpWhenRotationChanged", false);
         if(fragmentUpWhenRotationChanged){
@@ -1138,12 +725,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         drivingLongtitude = savedInstanceState.getDoubleArray("drivingLongtitude");
         drivingLatitude = savedInstanceState.getDoubleArray("drivingLatitude");
 
-        /*LatLngBounds.Builder builder = new LatLngBounds.Builder();
-        Location myLocation = mMap.getMyLocation();
-        builder.include(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()));
-        if (roomMarker != null){
-            builder.include(new LatLng(roomMarker.getPosition().latitude, roomMarker.getPosition().longitude));
-        }*/
         PolylineOptions walkRectLine;
         PolylineOptions driveRectLine;
 
@@ -1153,7 +734,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             for (int i = 0; i < walkingLatitude.length; i++) {
                 LatLng latLng = new LatLng(walkingLatitude[i], walkingLongtitude[i]);
                 walkRectLine.add(latLng);
-                //builder.include(latLng);
             }
             newWalkingPolyline = mMap.addPolyline(walkRectLine);
             Log.i("direction poly", ""+newWalkingPolyline);
@@ -1164,24 +744,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             for (int i = 0; i < drivingLatitude.length; i++) {
                 LatLng latLng = new LatLng(drivingLatitude[i], drivingLongtitude[i]);
                 driveRectLine.add(latLng);
-                //builder.include(latLng);
             }
             newDrivingPolyline = mMap.addPolyline(driveRectLine);
         }
-
-        /*LatLngBounds bounds = builder.build();
-        int padding = 150; // offset from edges of the map in pixels
-        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-        mMap.animateCamera(cu);*/
-//        if(actionMode){
-//        }
-//        currentCameraLatitude = savedInstanceState.getDouble("currentCameraLatitude");
-//        currentCameraLongtitude = savedInstanceState.getDouble("currentCameraLongtitude");
-//        latitudeList = savedInstanceState.getDoubleArray("latitudeList");
-//        longtitudeList = savedInstanceState.getDoubleArray("longtitudeList");
-//        currentPositionLongtitude = savedInstanceState.getDouble("currentPositionLongtitude");
-//        currentPositionLatitude = savedInstanceState.getDouble("currentPositionLatitude");
-//        fragmentUpWhenRotationChanged = savedInstanceState.getBoolean("fragmentUpWhenRotationChanged");
     }
 
     @Override
@@ -1246,7 +811,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // If the PopupWindow should be focusable
         popupWindow.setFocusable(true);
 
-        // If you need the PopupWindow to dismiss when when touched outside
         popupWindow.setBackgroundDrawable(new ColorDrawable());
 
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -1310,7 +874,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-//    public void onShowFavouritesClicked(MenuItem item) {
+    //    public void onShowFavouritesClicked(MenuItem item) {
 //        SearchView sv = (SearchView) findViewById(R.id.action_search);
 //        sv.clearFocus();
 //        favouritesMarkersList = new ArrayList<Marker>();
@@ -1332,13 +896,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         if(favoritesVisible){
             hideFavoritesClicked();
-            if(roomMarker!=null){
-                roomMarker.setVisible(true);
-            }
         }else{
-            if(roomMarker!=null){
-                roomMarker.setVisible(false);
-            }
             showFavoritesClicked();
         }
         iconifySearchView();
@@ -1350,11 +908,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             roomMarker.setVisible(true);
         }
         if (favouritesMarkersList != null) {
-            if (favouritesMarkersList.isEmpty()) {
-                //No favourites to hide
-            } else {
-                for (Iterator<Map.Entry<String, Marker>> it = favouritesMarkersList.entrySet().iterator(); it.hasNext(); ) {
-                    Marker mrk = it.next().getValue();
+            if (!favouritesMarkersList.isEmpty()) {
+                for (Map.Entry<String, Marker> stringMarkerEntry : favouritesMarkersList.entrySet()) {
+                    Marker mrk = stringMarkerEntry.getValue();
                     mrk.setVisible(false);
                 }
             }
@@ -1366,11 +922,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             roomMarker.remove();
         }
         if (favouritesMarkersList != null) {
-            if (favouritesMarkersList.isEmpty()) {
-                //No favourites to hide
-            } else {
-                for (Iterator<Map.Entry<String, Marker>> it = favouritesMarkersList.entrySet().iterator(); it.hasNext(); ) {
-                    Marker mrk = it.next().getValue();
+            if (!favouritesMarkersList.isEmpty()) {
+                for (Map.Entry<String, Marker> stringMarkerEntry : favouritesMarkersList.entrySet()) {
+                    Marker mrk = stringMarkerEntry.getValue();
                     mrk.remove();
                 }
             }
@@ -1378,7 +932,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void showFavoritesClicked(){
-        //favouritesMarkersList.clear();
         if(roomMarker!=null){
             roomMarker.setVisible(false);
         }
@@ -1388,26 +941,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Toast.LENGTH_LONG).show();
         } else {
             LatLngBounds.Builder builder = new LatLngBounds.Builder();
-            Iterator it = favouritesMarkersList.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry) it.next();
-                Marker m = (Marker)entry.getValue();
+            for (Object o : favouritesMarkersList.entrySet()) {
+                Map.Entry entry = (Map.Entry) o;
+                Marker m = (Marker) entry.getValue();
                 m.setVisible(true);
                 builder.include(m.getPosition());
-//                Map.Entry pair = (Map.Entry)it.next();
-//                Marker marker = mMap.addMarker(new MarkerOptions().position((LatLng) pair.getValue()).title((String) pair.getKey())
-//                        .icon(BitmapDescriptorFactory
-//                                .defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
-//                favouritesMarkersList.put(marker.getTitle(), marker);
-//                builder.include(marker.getPosition());
-//
-//                Map.Entry pair = (Map.Entry) it.next();
-//                Marker marker = mMap.addMarker(new MarkerOptions().position((LatLng) pair.getValue()).title((String) pair.getKey())
-//                        .icon(BitmapDescriptorFactory
-//                                .defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
-//                favouritesMarkersList.add(marker);
-//                builder.include(marker.getPosition());
-
             }
             Log.i("favs", ""+favourites);
             Log.i("favs markers", ""+favouritesMarkersList);
@@ -1474,9 +1012,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             //hideFavoritesClicked();
             favoritesVisible=!favoritesVisible;
         }
-        if(favouritesMarkersList!=null){
-            //favouritesMarkersList.clear();
-        }
         SearchView sv = (SearchView) findViewById(R.id.action_search);
         if(sv!=null){
             sv.clearFocus();
@@ -1484,6 +1019,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (favourites.isEmpty()){
             String data = "You have no favorites";
             Toast.makeText(getApplicationContext(), data, Toast.LENGTH_LONG).show();
+            mode = NORMAL_MODE;
             return false;
         }
         if (roomMarker != null){
@@ -1491,69 +1027,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         Log.i("favs on edit", "" + favourites);
         showFavoritesClicked();
-//        LatLngBounds.Builder builder = new LatLngBounds.Builder();
-//        Iterator it = favourites.entrySet().iterator();
-//        while (it.hasNext()) {
-//            Map.Entry pair = (Map.Entry)it.next();
-//            Marker marker = mMap.addMarker(new MarkerOptions().position((LatLng) pair.getValue()).title((String) pair.getKey())
-//                    .icon(BitmapDescriptorFactory
-//                            .defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
-//            favouritesMarkersList.put(marker.getTitle(), marker);
-//            builder.include(marker.getPosition());
-//            marker = null;
-//        }
-//        LatLngBounds bounds = builder.build();
-//        int padding = 150; // offset from edges of the map in pixels
-//        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-//        mMap.animateCamera(cu);
-//        if (roomMarker != null) {
-//            roomMarker.remove();
-//        }
-//        Log.i("favs on edit", "" + favourites);
-//        mode = EDIT_MODE;
-//        //editToolbar.setVisibility(View.VISIBLE);
-//        if (mActionMode != null) {
-//            return false;
-//        }
-//        // Start the CAB using the ActionMode.Callback defined above
-//        mActionMode = startActionMode(mActionModeCallback);
-//        Iterator it = favourites.entrySet().iterator();
-//        LatLngBounds.Builder builder = new LatLngBounds.Builder();
-//        while (it.hasNext()) {
-//            Map.Entry pair = (Map.Entry) it.next();
-//            Marker marker = mMap.addMarker(new MarkerOptions().position((LatLng) pair.getValue()).title((String) pair.getKey())
-//                    .icon(BitmapDescriptorFactory
-//                            .defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
-//            favouritesMarkersList.add(marker);
-//            builder.include(marker.getPosition());
-//        }
-//        LatLngBounds bounds = builder.build();
-//        int padding = 150; // offset from edges of the map in pixels
-//        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-//        mMap.animateCamera(cu);
-//        mode = EDIT_MODE;
-//        //editToolbar.setVisibility(View.VISIBLE);
-//        if (mActionMode != null) {
-//            return false;
-//        }
-//        favouritesMarkersList = new ArrayList<Marker>();
-//        // Start the CAB using the ActionMode.Callback defined above
-//        mActionMode = startActionMode(mActionModeCallback);
-//
-//        Iterator it = favourites.entrySet().iterator();
-//        LatLngBounds.Builder builder = new LatLngBounds.Builder();
-//        while (it.hasNext()) {
-//            Map.Entry pair = (Map.Entry) it.next();
-//            Marker marker = mMap.addMarker(new MarkerOptions().position((LatLng) pair.getValue()).title((String) pair.getKey())
-//                    .icon(BitmapDescriptorFactory
-//                            .defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
-//            favouritesMarkersList.add(marker);
-//            builder.include(marker.getPosition());
-//        }
-//        LatLngBounds bounds = builder.build();
-//        int padding = 150; // offset from edges of the map in pixels
-//        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-//        mMap.animateCamera(cu);
         String data = "Choose marker to edit...";
         Toast.makeText(getApplicationContext(), data, Toast.LENGTH_LONG).show();
         return true;
@@ -1572,6 +1045,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mActionMode = startActionMode(mActionModeCallback);
     }
 
+<<<<<<< HEAD
     /*public void onArrowBackClicked(MenuItem item) {
         SearchView sv = (SearchView) findViewById(R.id.action_search);
         sv.clearFocus();
@@ -1592,11 +1066,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //        roomMarker = mMap.addMarker(new MarkerOptions().position(roomMarker.getPosition()));
 //    }
 
+=======
+>>>>>>> master
 
     public void buildMarkersFromFavoriteList(){
-        Iterator it = favourites.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry)it.next();
+        for (Object o : favourites.entrySet()) {
+            Map.Entry pair = (Map.Entry) o;
             Marker marker = mMap.addMarker(new MarkerOptions().position((LatLng) pair.getValue()).title((String) pair.getKey())
                     .icon(BitmapDescriptorFactory
                             .defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
@@ -1609,15 +1084,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onAddFavouriteClicked(MenuItem item) {
         SearchView sv = (SearchView) findViewById(R.id.action_search);
         sv.clearFocus();
-        onMarkerClickRemove = false;
         if (roomMarker != null && !favourites.containsKey(roomMarker.getTitle())) {
-                Log.i("this room has", "" + roomMarker.getTitle());
+            Log.i("this room has", "" + roomMarker.getTitle());
             favourites.put(roomMarker.getTitle(), roomMarker.getPosition());
-            favouritesMarkersList.put(roomMarker.getTitle(), roomMarker);
+            Log.i("# of favs before:", favouritesMarkersList.size() + "");
+            Marker newFav = mMap.addMarker(new MarkerOptions().position(roomMarker.getPosition()).title(roomMarker.getTitle())
+                    .icon(BitmapDescriptorFactory
+                            .defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+            newFav.setVisible(false);
+            favouritesMarkersList.put(newFav.getTitle(),newFav);
+            Log.i("# of favs after: ",favouritesMarkersList.size()+"");
             saveToFavourites(roomMarker);
-                String data = roomMarker.getTitle() + " was added to favorites";
-                Toast.makeText(this, data,
-                        Toast.LENGTH_LONG).show();
+            String data = roomMarker.getTitle() + " was added to favorites";
+            Toast.makeText(this, data,
+                    Toast.LENGTH_LONG).show();
         } else if (roomMarker == null) {
             String data = "You need to specify a room first!";
             Toast.makeText(this, data,
@@ -1633,38 +1113,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.i("favs", "" + favourites);
     }
 
-//    public void onDeleteClicked(MenuItem item){
-//        SearchView sv = (SearchView)findViewById(R.id.action_search);
-//        sv.clearFocus();
-//        onMarkerClickRemove = true;
-//        Log.i("markerToDelete", "" + markerToDelete);
-//        if (markerToDelete != null){
-//            markerToDelete.remove();
-//            favourites.remove(markerToDelete.getTitle());
-//            favouritesMarkersList.remove(markerToDelete);
-//            removeMarkerFromMemory(markerToDelete);
-//            markerToDelete = null;
-//        }
-//    }
-    public void onDeleteClicked(MenuItem item) {
-        SearchView sv = (SearchView) findViewById(R.id.action_search);
-        sv.clearFocus();
-        onMarkerClickRemove = true;
-        if (markerToDelete != null) {
-            markerToDelete.remove();
-            Log.i("hei1", "sveis" + favouritesMarkersList.toString());
-            favourites.remove(markerToDelete.getTitle());
-            Log.i("hei1", "favHashmap" + favourites.toString());
-            favouritesMarkersList.remove(markerToDelete);
-            Log.i("markerToDelete", "" + markerToDelete.getTitle());
-            Log.i("hei1", "favArray" + favouritesMarkersList.toString());
-            removeMarkerFromMemory(markerToDelete);
-            markerToDelete = null;
-            editMenu.findItem(R.id.deleteFake).setVisible(true);
-            editMenu.findItem(R.id.delete).setVisible(false);
-
-        }
-    }
 
     public void loadFavourites() {
         Log.i("loading started", "...");
@@ -1676,7 +1124,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Log.i("c", "" + openFileInput(filename).getChannel());
             InputStreamReader isr = new InputStreamReader(fis);
             BufferedReader bufferedReader = new BufferedReader(isr);
-            StringBuilder sb = new StringBuilder();
             String line;
             try {
                 while ((line = bufferedReader.readLine()) != null) {
@@ -1699,7 +1146,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void saveToFavourites(Marker roomMarker) {
         Log.i("saving started", "...");
-        Context context = this.getApplicationContext();
         String filename = "favourites.txt";
         String content = roomMarker.getTitle() + " " + roomMarker.getPosition().latitude + " "
                 + roomMarker.getPosition().longitude + System.getProperty("line.separator");
@@ -1722,7 +1168,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         File inputFile = new File(filename);
         File tempFile = new File(context.getFilesDir(), tempFileName);
         String sb = "";
-        boolean successful = false;
         String lineToRemove = marker.getTitle() + " " + marker.getPosition().latitude + " "
                 + marker.getPosition().longitude;
         FileOutputStream outputStream;
@@ -1770,82 +1215,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        //hideFavoritesClicked();
-        //if (mode == EDIT_MODE){
-        //removeMarkerFromMemory(marker);
-        //favourites.remove(marker.getTitle());
-
-//        for (Iterator<Map.Entry<String, Marker>> it = favouritesMarkersList.entrySet().iterator(); it.hasNext(); ) {
-//            Marker mrk = it.next().getValue();
-//            if (marker.getTitle().equals(mrk.getTitle())) {
-//                Log.i("match!", "they were equal");
-//                mrk.setVisible(true);
-//                marker.remove();
-//                //it.remove();
-//            }
-//        }
-
-        //deleteSelectedMarker(marker.getTitle());
-        //Marker toDelete = favouritesMarkersList.get(marker.getTitle());
-        //Log.i("title=", marker.getTitle());
-        //Log.i("fav title = ", toDelete.getTitle());
-        //Log.i("are they equal = ", ""+marker.equals(toDelete));
-        //toDelete.remove();
-        //marker.remove();
-
-//        Log.i("clicked marker index:", ""+favouritesMarkersList.indexOf(marker));
+        editMenu.findItem(R.id.deleteFake).setVisible(false);
+        editMenu.findItem(R.id.delete).setVisible(true);
         markerToDelete = marker;
 
         return false;
     }
 
     public void deleteSelectedMarker(String title){
-            //markerToDelete.remove();
-        //Marker toDelete = favouritesMarkersList.get(title);
         removeMarkerFromMemory(markerToDelete);
-        //Log.i("is toDelete visible", toDelete.isVisible()+"");
-        //toDelete.remove();
         markerToDelete.remove();
-        //Log.i("before size: ", favouritesMarkersList.size() + "");
         favourites.remove(title);
         favouritesMarkersList.remove(title);
-        //Log.i("after size: ", favouritesMarkersList.size() + "");
-
-        //favourites.clear();
-        //favouritesMarkersList.clear();
-        //loadFavourites();
-        //buildMarkersFromFavoriteList();
-        //hideFavoritesClicked();
-        //showFavoritesClicked();
-        //toDelete.remove()
-            //favouritesMarkersList.remove(markerToDelete);
-            //markerToDelete = null;
-//    }
-//
-//        Log.i("marker", "clicked, mode:" + mode);
-//        if (mode == EDIT_MODE) {
-//            Log.i("marker", "marker to be delete placed");
-//            markerToDelete = marker;
-//            editToolbar.findViewById(R.id.delete).setVisibility(View.VISIBLE);
-//            editMenu.findItem(R.id.deleteFake).setVisible(false);
-//            editMenu.findItem(R.id.delete).setVisible(true);
-//            Log.i("marker", "marker to be delete placed: " + markerToDelete);
-//            Log.i("marker", "is marker to be deleted null: " + markerToDelete.equals(null));
-//            }
-//        return false;
-    }
-
-    public void deleteFile() {
-        String path = "/data/user/0/com.example.masommer.mapster/app_favourites.txt";
-        String filename = "favourites.txt";
-        try {
-            File f = new File(getFilesDir(), filename);
-            boolean delete = f.delete();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        loadFavourites();
+        editMenu.findItem(R.id.deleteFake).setVisible(true);
+        editMenu.findItem(R.id.delete).setVisible(false);
     }
 
 
@@ -1872,29 +1255,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             switch (item.getItemId()) {
                 case R.id.delete:
                     deleteSelectedMarker(markerToDelete.getTitle());
-                    //SearchView sv = (SearchView) findViewById(R.id.action_search);
-                    //sv.clearFocus();
-//                    Log.i("markerToDelete", "" + markerToDelete);
-//                    Log.i("markerToDelete inlist: ",""+favouritesMarkersList.contains(markerToDelete));
-//                    for (Marker m :
-//                            favouritesMarkersList) {
-//                        m.remove();
-//                        //favouritesMarkersList.remove(m);
-//                    }
-//                    if (markerToDelete != null) {
-//
-//                    }
-                    Log.i("markerToDelete", "" + markerToDelete);
-                    if (markerToDelete != null) {
-                        markerToDelete.remove();
-
-
-
-                        favourites.remove(markerToDelete.getTitle());
-                        favouritesMarkersList.remove(markerToDelete);
-                        removeMarkerFromMemory(markerToDelete);
-                        markerToDelete = null;
-                    }
                 default:
                     return true;
             }
@@ -1906,13 +1266,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mActionMode = null;
             if (roomMarker != null) {
                 roomMarker.setVisible(true);
-                //roomMarker = mMap.addMarker(new MarkerOptions().position(roomMarker.getPosition()));
-                if (roomMarker != null) {
-                    roomMarker = mMap.addMarker(new MarkerOptions().position(roomMarker.getPosition()));
-                }
-                mode = NORMAL_MODE;
-                roomMarker = mMap.addMarker(new MarkerOptions().position(roomMarker.getPosition()).title(roomMarker.getTitle()));
             }
+            mode = NORMAL_MODE;
         }
     };
 
@@ -1925,13 +1280,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     onMapReady(mMap);
-                    permissionAccessLocation = true;
                     if (mMenu != null){
                         mMenu.findItem(R.id.direction).setVisible(true);
                         mMenu.findItem(R.id.zoomToEye).setVisible(true);
                     }
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
 
                 } else {
 
@@ -1939,15 +1291,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         mMenu.findItem(R.id.direction).setVisible(false);
                         mMenu.findItem(R.id.zoomToEye).setVisible(false);
                     }
-                    permissionAccessLocation = false;
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
                 }
-                return;
             }
 
-            // other 'case' lines to check for other
-            // permissions this app might request
         }
     }
 
