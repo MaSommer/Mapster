@@ -85,7 +85,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LocationManager lm;
     private Polyline newWalkingPolyline;
     private Polyline newDrivingPolyline;
-    private BlankFragment fragment;
+    private InfoFragment fragment;
     private SharedPreferences prefs = null;
 
     private final int EDIT_MODE = 0;
@@ -204,7 +204,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         prefs = getSharedPreferences("com.mycompany.myAppName", MODE_PRIVATE);
         if (prefs.getBoolean("firstrun", true)) {
-            fragment = new BlankFragment();
+            fragment = new InfoFragment();
             fragment.show(getFragmentManager(), "Diag");
             prefs.edit().putBoolean("firstrun", false).apply();
         }
@@ -545,7 +545,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         SearchView sv = (SearchView) findViewById(R.id.action_search);
         sv.clearFocus();
         fragmentUpWhenRotationChanged = true;
-        fragment = new BlankFragment();
+        fragment = new InfoFragment();
         fragment.show(getFragmentManager(), "Diag");
         TextView tv = (TextView) findViewById(R.id.info_text);
         if(tv!=null){
@@ -701,7 +701,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         fragmentUpWhenRotationChanged = savedInstanceState.getBoolean("fragmentUpWhenRotationChanged", false);
         if(fragmentUpWhenRotationChanged){
-            fragment = new BlankFragment();
+            fragment = new InfoFragment();
             fragment.show(getFragmentManager(), "Diag");
         }
 
