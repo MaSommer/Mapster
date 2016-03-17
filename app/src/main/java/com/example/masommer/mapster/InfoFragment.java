@@ -10,10 +10,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 
-public class BlankFragment extends DialogFragment {
+public class InfoFragment extends DialogFragment {
 
 
-    public BlankFragment() {
+    public InfoFragment() {
         // Required empty public constructor
     }
 

@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:minHeight="350dp"
     android:minWidth="250dp"
-    tools:context="com.example.masommer.mapster.BlankFragment">
+    tools:context=".InfoFragment">
 
     <TextView
         android:id="@+id/info_header"
