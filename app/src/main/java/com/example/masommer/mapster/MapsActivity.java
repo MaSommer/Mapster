@@ -265,6 +265,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (roomMarker != null) {
             roomMarker.remove();
         }
+        Log.i("rumpetass", ""+roomMarker);
         roomMarker = mMap.addMarker(new MarkerOptions().position(roomPoint));
         roomMarker.setTitle(title);
         zoomToRoom(roomMarker.getPosition());
@@ -739,15 +740,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onResume();
         if(mMap!=null){
             if(roomMarker!=null){
+                Log.i("room", "marker" + roomMarker.getPosition());
                 MarkerOptions roomOpts = new MarkerOptions().position(roomMarker.getPosition());
                 roomMarker.remove();
                 roomMarker = mMap.addMarker(roomOpts);
             }
             if(favoritesVisible){
+                Log.i("fav", "" + favoritesVisible);
+
                 buildMarkersFromFavoriteList(); //markers must be rebuilt or else they will not draw after onPause
                 showFavoritesClicked();
             }
             if(drivingVisible){
+                Log.i("drive", "" + drivingVisible);
+
                 PolylineOptions polyOpts = new PolylineOptions().width(8).color(Color.BLUE);
                 polyOpts.addAll(newDrivingPolyline.getPoints());
                 newDrivingPolyline.remove();
@@ -793,15 +799,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (newDrivingPolyline != null) {
             newDrivingPolyline.remove();
             newDrivingPolyline = null;
+            drivingVisible = false;
         }
         if (newWalkingPolyline != null) {
             newWalkingPolyline.remove();
             newWalkingPolyline = null;
+            walkingVisible = false;
         }
         CameraPosition cp = new CameraPosition.Builder()
                 .target(latLng)
                 .zoom(19.9f)
                 .build();
+        Log.i("rumpetass", "pos" + latLng);
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cp));
     }
 
