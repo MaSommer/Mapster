@@ -139,12 +139,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private boolean walkingVisible;
     private boolean drivingVisible;
     private boolean searchWhileFavShow;
+    private boolean pausedNoRotate;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -208,6 +208,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (prefs.getBoolean("firstrun", true)) {
             fragment = new InfoFragment();
             fragment.show(getFragmentManager(), "Diag");
+            fragmentUpWhenRotationChanged = true;
             prefs.edit().putBoolean("firstrun", false).apply();
         }
 
@@ -254,8 +255,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void iconifySearchView(){
-        SearchView sv = (SearchView) mMenu.findItem(R.id.action_search).getActionView();
-        sv.onActionViewCollapsed();
+        if(mMenu!=null){
+            SearchView sv = (SearchView) mMenu.findItem(R.id.action_search).getActionView();
+            sv.onActionViewCollapsed();
+        }
     }
 
     private void roomFromSuggestion(Cursor c) {
@@ -316,7 +319,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap=googleMap;
-        if(setupMap){
+        if (setupMap){
             setupMapFirstTime(googleMap);
         }
         buildMarkersFromFavoriteList();
@@ -654,8 +657,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+        if(fragment!=null){
+            fragment.dismiss();
+        }
         super.onSaveInstanceState(outState);
         hideFavoritesClicked();
+        outState.putBoolean("searchWhileFavShow",searchWhileFavShow);
         outState.putBoolean("fragmentUpWhenRotationChanged", fragmentUpWhenRotationChanged);
         if (newDrivingPolyline != null){
             List<LatLng> drivingList = newDrivingPolyline.getPoints();
@@ -706,9 +713,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        pausedNoRotate = true;
         roomMarkerTitle = savedInstanceState.getString("roomTitle");
         roomMarkerLongtitude = savedInstanceState.getDouble("roomLong");
         roomMarkerLatitude = savedInstanceState.getDouble("roomLat");
+        searchWhileFavShow=savedInstanceState.getBoolean("searchWhileFavShow", false);
         if(roomMarkerTitle!=null){
             roomMarker=mMap.addMarker(new MarkerOptions().position(new LatLng(roomMarkerLatitude,roomMarkerLongtitude)));
             roomMarker.setTitle(roomMarkerTitle);
@@ -721,6 +730,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             onEditFavouriteClicked(null);
         }else if(favoritesVisible){
             showFavoritesClicked();
+            if(searchWhileFavShow){
+                roomMarker.setVisible(true);
+            }
         }
 
         drivingVisible = savedInstanceState.getBoolean("drivingVisible",false);
@@ -765,6 +777,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onResume() {
         super.onResume();
         if(mMap!=null){
+            hideFavoritesClicked();
+            favouritesMarkersList.clear();
+            buildMarkersFromFavoriteList(); //markers must be rebuilt or else they will not draw after onPause
             if(roomMarker!=null){
                 MarkerOptions roomOpts = new MarkerOptions().position(roomMarker.getPosition()).title(roomMarker.getTitle());
                 roomMarker.remove();
@@ -773,9 +788,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
             if(favoritesVisible||mode == EDIT_MODE){
                 Log.i("onresume", "happened");
-                hideFavoritesClicked();
-                favouritesMarkersList.clear();
-                buildMarkersFromFavoriteList(); //markers must be rebuilt or else they will not draw after onPause
                 showFavoritesClicked();
                 if(roomMarker!=null){
                     if(!favouritesMarkersList.containsKey(roomMarker.getTitle()) && searchWhileFavShow && mode!=EDIT_MODE){
@@ -814,9 +826,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             currentCameraLatitude = mMap.getCameraPosition().target.latitude;
             currentCameraLongtitude = mMap.getCameraPosition().target.longitude;
         }
-        if (fragment != null && fragment.isVisible()) {
-            fragment.dismiss();
-        }
+        //if (fragment != null) {
+        //    fragment.dismiss();
+        //    fragment = null;
+
 
     }
 
