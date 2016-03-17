@@ -84,11 +84,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private final int DATABASE_LOADER = 0;
     private Marker roomMarker;
     private LocationManager lm;
-    private boolean landscape;
     private Polyline newWalkingPolyline;
     private Polyline newDrivingPolyline;
     private BlankFragment fragment;
-    private FragmentManager fragmentManager;
     private SharedPreferences prefs = null;
 
     private final int EDIT_MODE = 0;
@@ -153,10 +151,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     MY_PERMISSION_LOCATION_ACCESS);
         }
-        if (savedInstanceState != null && savedInstanceState.getBoolean("fragmentUpWhenRotationChanged", false)) {
-            fragment = new BlankFragment();
-            fragment.show(getFragmentManager(), "Diag");
-        }
         lm = (LocationManager) getSystemService(LOCATION_SERVICE);
 
         setContentView(R.layout.activity_maps);
@@ -177,7 +171,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         if (findViewById(R.id.sampleListView) != null) {
-            landscape = true;
             listView = (ListView) findViewById(R.id.sampleListView);
             listView.setVisibility(View.GONE);
 
@@ -210,7 +203,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             sec.printStackTrace();
         }
 
-        fragmentManager = getSupportFragmentManager();
         prefs = getSharedPreferences("com.mycompany.myAppName", MODE_PRIVATE);
         if (prefs.getBoolean("firstrun", true)) {
             fragment = new BlankFragment();
@@ -688,7 +680,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
-//        super.onRestoreInstanceState(savedInstanceState);
         roomMarkerTitle = savedInstanceState.getString("roomTitle");
         roomMarkerLongtitude = savedInstanceState.getDouble("roomLong");
         roomMarkerLatitude = savedInstanceState.getDouble("roomLat");
@@ -699,7 +690,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         boolean edit_mode = savedInstanceState.getBoolean("edit_mode", false);
         favoritesVisible = savedInstanceState.getBoolean("favoritesVisible", false);
 
-        //TODO TESTING
         if(edit_mode){
             mode = EDIT_MODE;
             onEditFavouriteClicked(null);
