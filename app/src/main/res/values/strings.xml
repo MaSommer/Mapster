@@ -20,4 +20,8 @@
     <string name="edit_fav">Edit Favorites</string>
     <string name="show_favorites">Show Favorites</string>
     <string name="hide_favorites">Hide Favorites</string>
+    <string name="show_driving">Show driving direction</string>
+    <string name="hide_driving">Hide driving direction</string>
+    <string name="show_walking">Show walking direction</string>
+    <string name="hide_walking">Hide walking direction</string>
 </resources>
