@@ -377,18 +377,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         mMap.setOnMarkerClickListener(this);
         //roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(34.415370973562936, -119.84701473265886)));
-        if (latitudeList != null) {
-            Location location = mMap.getMyLocation();
-            LatLng currentPos = new LatLng(currentPositionLatitude, currentPositionLongtitude);
-            LatLng targetPos = new LatLng(roomMarker.getPosition().latitude, roomMarker.getPosition().longitude);
-            findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");
-        }
-
-        if (roomMarkerTitle != null) {
-            roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(roomMarkerLatitude, roomMarkerLongtitude)));
-            roomMarker.setTitle(roomMarkerTitle);
-        }
-
+//        if (latitudeList != null) {
+//            Location location = mMap.getMyLocation();
+//            LatLng currentPos = new LatLng(currentPositionLatitude, currentPositionLongtitude);
+//            LatLng targetPos = new LatLng(roomMarker.getPosition().latitude, roomMarker.getPosition().longitude);
+//            findDirections(currentPos.latitude, currentPos.longitude, targetPos.latitude, targetPos.longitude, "walking");
+//        }
+//
+//        if (roomMarkerTitle != null) {
+//            roomMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(roomMarkerLatitude, roomMarkerLongtitude)));
+//            roomMarker.setTitle(roomMarkerTitle);
+//        }
+        enableOverlays();
         mMap.setBuildingsEnabled(false);
     }
 
@@ -571,6 +571,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        mMap=googleMap;
         if(setupMap){
             setupMapFirstTime(googleMap);
         }else{
@@ -955,9 +956,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             newDrivingPolyline = null;
             drivingVisible = false;
         } else if (roomMarker == null){
-        String data = "No target room specified.";
-        Toast.makeText(this, data,
-                Toast.LENGTH_LONG).show();
+            String data = "No target room specified.";
+            Toast.makeText(this, data,
+                    Toast.LENGTH_LONG).show();
         }
 
     }
@@ -1309,7 +1310,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-//    public void onShowFavouritesClicked(MenuItem item) {
+    //    public void onShowFavouritesClicked(MenuItem item) {
 //        SearchView sv = (SearchView) findViewById(R.id.action_search);
 //        sv.clearFocus();
 //        favouritesMarkersList = new ArrayList<Marker>();
@@ -1331,13 +1332,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         if(favoritesVisible){
             hideFavoritesClicked();
-            if(roomMarker!=null){
-                roomMarker.setVisible(true);
-            }
+            //if(roomMarker!=null){
+            //    roomMarker.setVisible(true);
+            //}
         }else{
-            if(roomMarker!=null){
-                roomMarker.setVisible(false);
-            }
+            //    if(roomMarker!=null){
+            //        roomMarker.setVisible(false);
+            //    }
             showFavoritesClicked();
         }
         iconifySearchView();
@@ -1473,9 +1474,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             //hideFavoritesClicked();
             favoritesVisible=!favoritesVisible;
         }
-        if(favouritesMarkersList!=null){
-            //favouritesMarkersList.clear();
-        }
         SearchView sv = (SearchView) findViewById(R.id.action_search);
         if(sv!=null){
             sv.clearFocus();
@@ -1483,6 +1481,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (favourites.isEmpty()){
             String data = "You have no favorites";
             Toast.makeText(getApplicationContext(), data, Toast.LENGTH_LONG).show();
+            mode = NORMAL_MODE;
             return false;
         }
         if (roomMarker != null){
@@ -1571,15 +1570,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mActionMode = startActionMode(mActionModeCallback);
     }
 
-    public void onArrowBackClicked(MenuItem item) {
-        SearchView sv = (SearchView) findViewById(R.id.action_search);
-        sv.clearFocus();
-        editToolbar.setVisibility(View.GONE);
-        onMarkerClickRemove = false;
-        mode = NORMAL_MODE;
-        onHideFavouritesClicked(item);
-        roomMarker = mMap.addMarker(new MarkerOptions().position(roomMarker.getPosition()).title(roomMarker.getTitle()));
-    }
+//    public void onArrowBackClicked(MenuItem item) {
+//        SearchView sv = (SearchView) findViewById(R.id.action_search);
+//        sv.clearFocus();
+//        editToolbar.setVisibility(View.GONE);
+//        onMarkerClickRemove = false;
+//        mode = NORMAL_MODE;
+//        onHideFavouritesClicked(item);
+//        roomMarker = mMap.addMarker(new MarkerOptions().position(roomMarker.getPosition()).title(roomMarker.getTitle()));
+//    }
 
 //    public void onArrowBackClicked(MenuItem item) {
 //        SearchView sv = (SearchView) findViewById(R.id.action_search);
@@ -1610,13 +1609,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         sv.clearFocus();
         onMarkerClickRemove = false;
         if (roomMarker != null && !favourites.containsKey(roomMarker.getTitle())) {
-                Log.i("this room has", "" + roomMarker.getTitle());
+            Log.i("this room has", "" + roomMarker.getTitle());
             favourites.put(roomMarker.getTitle(), roomMarker.getPosition());
-            favouritesMarkersList.put(roomMarker.getTitle(), roomMarker);
+            Log.i("# of favs before:", favouritesMarkersList.size() + "");
+            Marker newFav = mMap.addMarker(new MarkerOptions().position(roomMarker.getPosition()).title(roomMarker.getTitle())
+                    .icon(BitmapDescriptorFactory
+                            .defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+            newFav.setVisible(false);
+            favouritesMarkersList.put(newFav.getTitle(),newFav);
+            Log.i("# of favs after: ",favouritesMarkersList.size()+"");
             saveToFavourites(roomMarker);
-                String data = roomMarker.getTitle() + " was added to favorites";
-                Toast.makeText(this, data,
-                        Toast.LENGTH_LONG).show();
+            String data = roomMarker.getTitle() + " was added to favorites";
+            Toast.makeText(this, data,
+                    Toast.LENGTH_LONG).show();
         } else if (roomMarker == null) {
             String data = "You need to specify a room first!";
             Toast.makeText(this, data,
@@ -1632,7 +1637,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.i("favs", "" + favourites);
     }
 
-//    public void onDeleteClicked(MenuItem item){
+    //    public void onDeleteClicked(MenuItem item){
 //        SearchView sv = (SearchView)findViewById(R.id.action_search);
 //        sv.clearFocus();
 //        onMarkerClickRemove = true;
@@ -1793,13 +1798,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //marker.remove();
 
 //        Log.i("clicked marker index:", ""+favouritesMarkersList.indexOf(marker));
+//        editToolbar.findViewById(R.id.delete).setVisibility(View.VISIBLE);
+        editMenu.findItem(R.id.deleteFake).setVisible(false);
+        editMenu.findItem(R.id.delete).setVisible(true);
         markerToDelete = marker;
 
         return false;
     }
 
     public void deleteSelectedMarker(String title){
-            //markerToDelete.remove();
+        //markerToDelete.remove();
         //Marker toDelete = favouritesMarkersList.get(title);
         removeMarkerFromMemory(markerToDelete);
         //Log.i("is toDelete visible", toDelete.isVisible()+"");
@@ -1809,6 +1817,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         favourites.remove(title);
         favouritesMarkersList.remove(title);
         //Log.i("after size: ", favouritesMarkersList.size() + "");
+        editMenu.findItem(R.id.deleteFake).setVisible(true);
+        editMenu.findItem(R.id.delete).setVisible(false);
 
         //favourites.clear();
         //favouritesMarkersList.clear();
@@ -1817,17 +1827,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //hideFavoritesClicked();
         //showFavoritesClicked();
         //toDelete.remove()
-            //favouritesMarkersList.remove(markerToDelete);
-            //markerToDelete = null;
+        //favouritesMarkersList.remove(markerToDelete);
+        //markerToDelete = null;
 //    }
 //
 //        Log.i("marker", "clicked, mode:" + mode);
 //        if (mode == EDIT_MODE) {
 //            Log.i("marker", "marker to be delete placed");
 //            markerToDelete = marker;
-//            editToolbar.findViewById(R.id.delete).setVisibility(View.VISIBLE);
-//            editMenu.findItem(R.id.deleteFake).setVisible(false);
-//            editMenu.findItem(R.id.delete).setVisible(true);
+//
 //            Log.i("marker", "marker to be delete placed: " + markerToDelete);
 //            Log.i("marker", "is marker to be deleted null: " + markerToDelete.equals(null));
 //            }
@@ -1883,17 +1891,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //                    if (markerToDelete != null) {
 //
 //                    }
-                    Log.i("markerToDelete", "" + markerToDelete);
-                    if (markerToDelete != null) {
-                        markerToDelete.remove();
-
-
-
-                        favourites.remove(markerToDelete.getTitle());
-                        favouritesMarkersList.remove(markerToDelete);
-                        removeMarkerFromMemory(markerToDelete);
-                        markerToDelete = null;
-                    }
+//                    Log.i("markerToDelete", "" + markerToDelete);
+//                    if (markerToDelete != null) {
+//                        markerToDelete.remove();
+//
+//
+//
+//                        favourites.remove(markerToDelete.getTitle());
+//                        favouritesMarkersList.remove(markerToDelete);
+//                        removeMarkerFromMemory(markerToDelete);
+//                        markerToDelete = null;
+//                    }
                 default:
                     return true;
             }
@@ -1905,13 +1913,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mActionMode = null;
             if (roomMarker != null) {
                 roomMarker.setVisible(true);
-                //roomMarker = mMap.addMarker(new MarkerOptions().position(roomMarker.getPosition()));
-                if (roomMarker != null) {
-                    roomMarker = mMap.addMarker(new MarkerOptions().position(roomMarker.getPosition()));
-                }
-                mode = NORMAL_MODE;
-                roomMarker = mMap.addMarker(new MarkerOptions().position(roomMarker.getPosition()).title(roomMarker.getTitle()));
+//                //roomMarker = mMap.addMarker(new MarkerOptions().position(roomMarker.getPosition()));
+//                if (roomMarker != null) {
+//                    roomMarker = mMap.addMarker(new MarkerOptions().position(roomMarker.getPosition()));
+//                }
+//                roomMarker = mMap.addMarker(new MarkerOptions().position(roomMarker.getPosition()).title(roomMarker.getTitle()));
             }
+            mode = NORMAL_MODE;
         }
     };
 
