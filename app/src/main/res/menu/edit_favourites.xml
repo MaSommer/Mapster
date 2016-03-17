@@ -12,8 +12,17 @@
     <item
         android:id="@+id/delete"
         android:orderInCategory="100"
-        android:title="Favourites"
-        android:icon="@drawable/ic_trash"
+        android:title="Delete"
+        android:icon="@drawable/ic_delete_24dp1"
+        android:onClick="onDeleteClicked"
+        app:showAsAction="always"
+        />
+
+    <item
+        android:id="@+id/deleteFake"
+        android:orderInCategory="100"
+        android:title="Fake Delete"
+        android:icon="@drawable/ic_delete_24dp3"
         android:onClick="onDeleteClicked"
         app:showAsAction="always"
         />
