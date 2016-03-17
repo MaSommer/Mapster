@@ -23,9 +23,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 
-/**
- * Created by agmal_000 on 07.03.2016.
- */
 public class DatabaseTable extends ListActivity{
 
     private static final String TAG = "RoomDatabase";
