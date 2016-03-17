@@ -50,6 +50,7 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
@@ -738,10 +739,35 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onResume() {
         super.onResume();
+        if(mMap!=null){
+            if(roomMarker!=null){
+                MarkerOptions roomOpts = new MarkerOptions().position(roomMarker.getPosition());
+                roomMarker.remove();
+                roomMarker = mMap.addMarker(roomOpts);
+            }
+            if(favoritesVisible){
+                buildMarkersFromFavoriteList(); //markers must be rebuilt or else they will not draw after onPause
+                showFavoritesClicked();
+            }
+            if(drivingVisible){
+                PolylineOptions polyOpts = new PolylineOptions().width(8).color(Color.BLUE);
+                polyOpts.addAll(newDrivingPolyline.getPoints());
+                newDrivingPolyline.remove();
+                newDrivingPolyline = mMap.addPolyline(polyOpts);
+            }
+            if(walkingVisible){
+                PolylineOptions polyOpts = new PolylineOptions().width(8).color(Color.RED);
+                polyOpts.addAll(newWalkingPolyline.getPoints());
+                newWalkingPolyline.remove();
+                newWalkingPolyline = mMap.addPolyline(polyOpts);
+            }
+        }
+
         if (cameraPos != null) {
             mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPos));
             cameraPos = null;
         }
+
     }
 
     @Override
