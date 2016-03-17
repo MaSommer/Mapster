@@ -738,10 +738,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onResume() {
         super.onResume();
+        Log.i("check", favouritesMarkersList.size() +"");
         if (cameraPos != null) {
             mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPos));
             cameraPos = null;
         }
+        getSupportFragmentManager().findFragmentById(R.id.map).getRetainInstance();
     }
 
     @Override
@@ -942,55 +944,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mMap.animateCamera(cu);
         }
     }
-
-//    public void onHideFavouritesClicked(MenuItem item) {
-//        SearchView sv = (SearchView) findViewById(R.id.action_search);
-//        sv.clearFocus();
-//        Log.i("favs", "" + favouritesMarkersList);
-//        if (favouritesMarkersList != null) {
-//            if (favouritesMarkersList.isEmpty()) {
-//                //No favourites to hide
-//            } else {
-//                for (Marker marker : favouritesMarkersList) {
-//                    marker.remove();
-//                }
-//            }
-//        }
-//    }
-
-//    public void onEditFavouriteClicked(MenuItem item){
-//            SearchView sv = (SearchView) findViewById(R.id.action_search);
-//            sv.clearFocus();
-//            if (favourites.isEmpty()) {
-//                String data = "You have no favourites";
-//                Toast.makeText(this, data, Toast.LENGTH_LONG).show();
-//                return;
-//            }
-//        }
-//    public void onHideFavouritesClicked(MenuItem item) {
-//        SearchView sv = (SearchView) findViewById(R.id.action_search);
-//        sv.clearFocus();
-//        Log.i("favs", "" + favouritesMarkersList);
-//        if (favouritesMarkersList != null) {
-//            if (favouritesMarkersList.isEmpty()) {
-//                //No favourites to hide
-//            } else {
-//                for (Marker marker : favouritesMarkersList) {
-//                    marker.remove();
-//                }
-//            }
-//        }
-//    }
-
-    /*public void onEditFavouriteClicked(MenuItem item) {
-        SearchView sv = (SearchView) findViewById(R.id.action_search);
-        sv.clearFocus();
-        if (favourites.isEmpty()) {
-            String data = "You have no favourites";
-            Toast.makeText(this, data, Toast.LENGTH_LONG).show();
-            return;
-        }
-    }*/
 
     public boolean enterFavEditMode(){
         //mode=EDIT_MODE;
