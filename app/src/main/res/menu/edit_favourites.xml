@@ -14,6 +14,7 @@
         android:orderInCategory="100"
         android:title="Favourites"
         android:icon="@drawable/ic_trash"
+        android:onClick="onDeleteClicked"
         app:showAsAction="always"
         />
 
