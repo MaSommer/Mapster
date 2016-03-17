@@ -767,26 +767,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onResume();
         if(mMap!=null){
             if(roomMarker!=null){
-<<<<<<< HEAD
-                Log.i("room", "marker" + roomMarker.getPosition());
-                MarkerOptions roomOpts = new MarkerOptions().position(roomMarker.getPosition());
-=======
                 MarkerOptions roomOpts = new MarkerOptions().position(roomMarker.getPosition()).title(roomMarker.getTitle());
->>>>>>> master
                 roomMarker.remove();
                 roomMarker=null;
                 roomMarker = mMap.addMarker(roomOpts);
             }
-<<<<<<< HEAD
-            if(favoritesVisible){
-                Log.i("fav", "" + favoritesVisible);
-
-=======
             if(favoritesVisible||mode == EDIT_MODE){
                 Log.i("onresume", "happened");
                 hideFavoritesClicked();
                 favouritesMarkersList.clear();
->>>>>>> master
                 buildMarkersFromFavoriteList(); //markers must be rebuilt or else they will not draw after onPause
                 showFavoritesClicked();
                 if(roomMarker!=null){
@@ -819,18 +808,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (mMap != null) {
-            currentCameraLatitude = mMap.getCameraPosition().target.latitude;
-            currentCameraLongtitude = mMap.getCameraPosition().target.longitude;
-        }
-        if (fragment != null && fragment.isVisible()) {
-            fragment.dismiss();
-        }
-
-    }
 
     public void onClickFragmentOk(View v) {
         fragmentUpWhenRotationChanged = false;
@@ -846,20 +823,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (newDrivingPolyline != null) {
             newDrivingPolyline.remove();
             newDrivingPolyline = null;
-<<<<<<< HEAD
-            drivingVisible = false;
-=======
             drivingVisible=false;
->>>>>>> master
         }
         if (newWalkingPolyline != null) {
             newWalkingPolyline.remove();
             newWalkingPolyline = null;
-<<<<<<< HEAD
             walkingVisible = false;
-=======
-            walkingVisible=false;
->>>>>>> master
+
         }
         CameraPosition cp = new CameraPosition.Builder()
                 .target(latLng)
