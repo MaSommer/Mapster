@@ -739,9 +739,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onResume() {
         super.onResume();
-<<<<<<< HEAD
-        Log.i("check", favouritesMarkersList.size() +"");
-=======
         if(mMap!=null){
             if(roomMarker!=null){
                 MarkerOptions roomOpts = new MarkerOptions().position(roomMarker.getPosition());
@@ -765,17 +762,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 newWalkingPolyline = mMap.addPolyline(polyOpts);
             }
         }
-
->>>>>>> master
         if (cameraPos != null) {
             mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPos));
             cameraPos = null;
         }
-<<<<<<< HEAD
-        getSupportFragmentManager().findFragmentById(R.id.map).getRetainInstance();
-=======
-
->>>>>>> master
     }
 
     @Override
