@@ -18,7 +18,6 @@ import android.app.SearchManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
@@ -50,7 +49,6 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
@@ -78,7 +76,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor>, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener, BlankFragment.OnFragmentInteractionListener, GoogleMap.OnMarkerClickListener {
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor>, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMapClickListener, LocationListener, GoogleMap.OnMarkerClickListener {
 
     private GoogleMap mMap;
     private final int MY_PERMISSION_LOCATION_ACCESS = 1;
@@ -884,22 +882,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-    //    public void onShowFavouritesClicked(MenuItem item) {
-//        SearchView sv = (SearchView) findViewById(R.id.action_search);
-//        sv.clearFocus();
-//        favouritesMarkersList = new ArrayList<Marker>();
-//        if (favourites.isEmpty()) {
-//            String data = "No favourites to show";
-//        }
-//    }
-//    public void onShowFavouritesClicked(MenuItem item) {
-//        SearchView sv = (SearchView) findViewById(R.id.action_search);
-//        sv.clearFocus();
-//        favouritesMarkersList = new ArrayList<Marker>();
-//        if (favourites.isEmpty()) {
-//            String data = "No favourites to show";
-//        }
-//    }
     public void onToggleFavouritesClicked(MenuItem item){
         if(favourites.isEmpty()){
             return;
@@ -968,9 +950,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public boolean enterFavEditMode(){
-        //mode=EDIT_MODE;
         if(favoritesVisible){ //exit "show favorites" if in this mode
-            //hideFavoritesClicked();
             favoritesVisible=!favoritesVisible;
         }
         SearchView sv = (SearchView) findViewById(R.id.action_search);
